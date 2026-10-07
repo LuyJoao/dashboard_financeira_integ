@@ -68,3 +68,8 @@ Em produção, aponte `VITE_API_URL` (em `desktop/.env`) para a URL HTTPS da API
 3. Empresas, pagamentos e filtros por categoria
 4. Dashboard (endpoints agregados + Recharts)
 5. Token no armazenamento seguro do Electron (`safeStorage`) e auto-update (`electron-updater`)
+
+## Servidor na rede interna
+
+Passo a passo para hospedar API + PostgreSQL em uma máquina da empresa (início automático,
+firewall e backup diário): veja `deploy/README.md`.
