@@ -29,7 +29,7 @@ CREATE DATABASE pagamentos OWNER app;
 cd backend
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env                 # ajuste DATABASE_URL e troque SECRET_KEY
+copy .env.example .env                 # ajuste DATABASE_URL e troque SECRET_KEY
 python -m app.seed admin@empresa.com "Administrador" SenhaForte123   # cria tabelas e 1º admin
 uvicorn app.main:app --reload
 ```
@@ -42,7 +42,7 @@ O código do "esqueci a senha" aparece no console da API (e-mail real: `app/serv
 ```bash
 cd desktop
 npm install
-cp .env.example .env
+copy .env.example .env
 npm run electron:dev      # abre o app Electron
 npm run dev               # ou só no navegador: http://localhost:5173
 npm run electron:build    # gera o instalador em desktop/release
