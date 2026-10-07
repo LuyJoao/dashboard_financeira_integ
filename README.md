@@ -12,9 +12,9 @@ Quem usa o app **não instala PostgreSQL nem Python**: só o instalador do app d
 O banco e a API ficam em um servidor central, e é lá que todos compartilham os mesmos dados.
 Em desenvolvimento, você precisa do PostgreSQL na sua máquina (ou em um serviço online).
 
-## 1. PostgreSQL para desenvolvimento (escolha uma opção)
+## 1. PostgreSQL para desenvolvimento
 
-**A) Instalar na máquina** — baixe em https://www.postgresql.org/download/ (Windows/macOS),
+**Instalar na máquina** — baixe em https://www.postgresql.org/download/ (Windows/macOS),
 ou `sudo apt install postgresql` (Ubuntu). Depois crie o usuário e o banco:
 
 ```sql
@@ -22,9 +22,6 @@ ou `sudo apt install postgresql` (Ubuntu). Depois crie o usuário e o banco:
 CREATE USER app WITH PASSWORD 'app';
 CREATE DATABASE pagamentos OWNER app;
 ```
-
-**B) Serviço online gratuito** (Neon, Supabase): crie o banco no site e copie a
-connection string para `DATABASE_URL`, trocando o início por `postgresql+psycopg://`.
 
 ## 2. Rodar o back-end
 
