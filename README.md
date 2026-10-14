@@ -27,7 +27,8 @@ CREATE DATABASE pagamentos OWNER app;
 
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+python -m venv .venv && source .venv/bin/activate   # Linux: ativa a variavel de ambiente no Linux
+.venv\Scripts\activate # Windows: ativa a variavel de ambiente no windows
 pip install -r requirements.txt
 copy .env.example .env                 # ajuste DATABASE_URL e troque SECRET_KEY
 python -m app.seed admin@empresa.com "Administrador" SenhaForte123   # cria tabelas e 1º admin
