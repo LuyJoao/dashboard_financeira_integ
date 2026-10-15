@@ -5,13 +5,14 @@ import { useAuth } from "../auth/AuthContext";
 import { btnCls, inputCls } from "../components/ui";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, sessaoExpirada } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
 
+  // Evita o envio tradicional do formulário e conduz ao painel após autenticar.
   async function enviar(e: FormEvent) {
     e.preventDefault();
     setEnviando(true);
@@ -30,6 +31,9 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
       <form onSubmit={enviar} className="w-full max-w-sm space-y-4 rounded-xl border bg-white p-6">
         <h1 className="text-xl font-semibold">Entrar</h1>
+        {sessaoExpirada && (
+          <p className="rounded-md bg-amber-50 p-2 text-sm text-amber-800">Sua sessão expirou. Entre novamente.</p>
+        )}
         <input className={inputCls} type="email" placeholder="E-mail" value={email}
           onChange={(e) => setEmail(e.target.value)} required />
         <input className={inputCls} type="password" placeholder="Senha" value={senha}

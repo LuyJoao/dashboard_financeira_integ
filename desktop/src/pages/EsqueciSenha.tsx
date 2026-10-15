@@ -8,6 +8,7 @@ export default function EsqueciSenha() {
   const [msg, setMsg] = useState("");
   const [erro, setErro] = useState("");
 
+  // A resposta do servidor informa o resultado sem encerrar o fluxo da tela.
   async function enviar(e: FormEvent) {
     e.preventDefault();
     setErro("");

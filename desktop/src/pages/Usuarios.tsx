@@ -11,6 +11,7 @@ export default function Usuarios() {
   const [form, setForm] = useState(vazio);
   const [erro, setErro] = useState("");
 
+  // O cache mantém a tabela sincronizada com os dados retornados pela API.
   const lista = useQuery({
     queryKey: ["usuarios"],
     queryFn: () => api.get<Usuario[]>("/api/usuarios").then((r) => r.data),
@@ -21,6 +22,7 @@ export default function Usuarios() {
     onSuccess: () => {
       setForm(vazio);
       setErro("");
+      // Rebusca a lista após o cadastro para incluir o novo usuário.
       qc.invalidateQueries({ queryKey: ["usuarios"] });
     },
     onError: (e) => setErro(mensagemErro(e)),

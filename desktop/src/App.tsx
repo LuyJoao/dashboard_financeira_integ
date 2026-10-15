@@ -10,10 +10,12 @@ import Usuarios from "./pages/Usuarios";
 export default function App() {
   return (
     <Routes>
+      {/* Recuperação de senha e login ficam acessíveis sem sessão autenticada. */}
       <Route path="/login" element={<Login />} />
       <Route path="/esqueci-senha" element={<EsqueciSenha />} />
       <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
+      {/* As rotas internas compartilham o layout; usuários são restritos a admins. */}
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route index element={<Placeholder titulo="Dashboard" />} />

@@ -1,4 +1,5 @@
 export function Placeholder({ titulo }: { titulo: string }) {
+  // Mantém a rota navegável enquanto sua tela definitiva ainda não existe.
   return (
     <div>
       <h1 className="text-xl font-semibold">{titulo}</h1>

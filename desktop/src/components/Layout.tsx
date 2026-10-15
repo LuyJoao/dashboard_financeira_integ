@@ -8,6 +8,7 @@ const linkCls = ({ isActive }: { isActive: boolean }) =>
 
 export function Layout() {
   const { user, logout } = useAuth();
+  // O avatar usa até duas iniciais para identificar o usuário sem outra imagem.
   const iniciais = user!.nome
     .split(" ")
     .map((p) => p[0])
@@ -19,7 +20,7 @@ export function Layout() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="flex items-center justify-between border-b bg-white px-6 py-3">
         <nav className="flex items-center gap-1">
-          <span className="mr-4 font-semibold">Pagamentos</span>
+          <span className="mr-4 font-semibold">INTEG</span>
           <NavLink to="/" end className={linkCls}>Dashboard</NavLink>
           <NavLink to="/empresas" className={linkCls}>Empresas</NavLink>
           <NavLink to="/importar" className={linkCls}>Importar</NavLink>

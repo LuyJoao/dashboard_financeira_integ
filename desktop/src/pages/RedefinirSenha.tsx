@@ -9,6 +9,7 @@ export default function RedefinirSenha() {
   const [novaSenha, setNovaSenha] = useState("");
   const [erro, setErro] = useState("");
 
+  // Após a redefinição, solicita novo login em vez de iniciar sessão automaticamente.
   async function enviar(e: FormEvent) {
     e.preventDefault();
     setErro("");
