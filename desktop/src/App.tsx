@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import RedefinirSenha from "./pages/RedefinirSenha";
 import Usuarios from "./pages/Usuarios";
 import Lancamentos from "./pages/Lancamentos";
+import Importar from "./pages/Importar";
 
 export default function App() {
   return (
@@ -21,7 +22,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<Placeholder titulo="Dashboard" />} />
           <Route path="empresas" element={<Placeholder titulo="Empresas e pagamentos" />} />
-          <Route path="importar" element={<Placeholder titulo="Importar planilha Excel" />} />
+          <Route path="importar" element={<Importar />} />
           <Route path="lancamentos" element={<Lancamentos />} />
           <Route element={<ProtectedRoute admin />}>
             <Route path="usuarios" element={<Usuarios />} />

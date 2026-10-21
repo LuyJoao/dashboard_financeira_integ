@@ -11,3 +11,9 @@ export function formatData(iso: string | null | undefined): string {
   const [ano, mes, dia] = iso.slice(0, 10).split("-");
   return `${dia}/${mes}/${ano}`;
 }
+
+// Data e hora de um instante real (com fuso). Aqui a conversão para o horário local é desejada.
+export function formatDataHora(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}
