@@ -8,6 +8,7 @@ import RedefinirSenha from "./pages/RedefinirSenha";
 import Usuarios from "./pages/Usuarios";
 import Lancamentos from "./pages/Lancamentos";
 import Importar from "./pages/Importar";
+import Dashboard from "./pages/Dashboard";
 
 export default function App() {
   return (
@@ -20,7 +21,7 @@ export default function App() {
       {/* As rotas internas compartilham o layout; usuários são restritos a admins. */}
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
-          <Route index element={<Placeholder titulo="Dashboard" />} />
+          <Route index element={<Dashboard />} />
           <Route path="empresas" element={<Placeholder titulo="Empresas e pagamentos" />} />
           <Route path="importar" element={<Importar />} />
           <Route path="lancamentos" element={<Lancamentos />} />
