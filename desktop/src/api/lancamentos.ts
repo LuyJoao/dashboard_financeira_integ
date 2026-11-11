@@ -1,8 +1,9 @@
 import { api } from "./client";
-import { atualizarMock, excluirMock, listarMock } from "../mock/lancamentos";
+import { atualizarMock, criarMock, excluirMock, listarMock } from "../mock/lancamentos";
 
 // ---------- Contrato com o back-end ----------
 // GET    /api/lancamentos        -> Lancamento[]
+// POST   /api/lancamentos        -> Lancamento   (corpo: LancamentoEdicao; lançamento MANUAL, sem assinatura de importação)
 // PATCH  /api/lancamentos/{id}   -> Lancamento   (corpo: LancamentoEdicao)
 // DELETE /api/lancamentos/{id}   -> 204
 // O back-end deve validar as MESMAS regras do front (veja validar() em lib/lancamentos.ts).
@@ -38,4 +39,9 @@ export async function atualizarLancamento(id: number, dados: LancamentoEdicao): 
 export async function excluirLancamento(id: number): Promise<void> {
   if (USAR_MOCK) return excluirMock(id);
   await api.delete(`/api/lancamentos/${id}`);
+}
+
+export async function criarLancamento(dados: LancamentoEdicao): Promise<Lancamento> {
+  if (USAR_MOCK) return criarMock(dados);
+  return (await api.post<Lancamento>("/api/lancamentos", dados)).data;
 }

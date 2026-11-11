@@ -1,28 +1,29 @@
 import { FormEvent, useState } from "react";
-import type { Lancamento, LancamentoEdicao, Tipo } from "../api/lancamentos";
+import type { LancamentoEdicao, Tipo } from "../api/lancamentos";
 import { OBS_APLICACAO, parseValorBRL, validar, valorParaCampo } from "../lib/lancamentos";
 import { btnCls, inputCls } from "./ui";
 
 type Props = {
-  inicial: Lancamento;
+  inicial: LancamentoEdicao;
   contas: string[];
   categorias: string[];
   enviando: boolean;
   erroServidor?: string;
+  nota?: string;
   onSalvar: (dados: LancamentoEdicao) => void;
   onCancelar: () => void;
 };
 
 const rotulo = "mb-1 block text-xs text-slate-500";
 
-export function FormLancamento({ inicial, contas, categorias, enviando, erroServidor, onSalvar, onCancelar }: Props) {
+export function FormLancamento({ inicial, contas, categorias, enviando, erroServidor, nota, onSalvar, onCancelar }: Props) {
   const [data, setData] = useState(inicial.data);
   const [banco, setBanco] = useState(inicial.banco);
   const [categoria, setCategoria] = useState(inicial.categoria);
   const [tipo, setTipo] = useState<Tipo>(inicial.tipo);
   const [descricao, setDescricao] = useState(inicial.descricao);
   const [observacao, setObservacao] = useState(inicial.observacao);
-  const [valorTxt, setValorTxt] = useState(valorParaCampo(inicial.valor));
+  const [valorTxt, setValorTxt] = useState(inicial.valor === 0 ? "" : valorParaCampo(inicial.valor));
   const [erros, setErros] = useState<string[]>([]);
 
   function enviar(e: FormEvent) {
@@ -102,7 +103,7 @@ export function FormLancamento({ inicial, contas, categorias, enviando, erroServ
       </label>
 
       <p className="text-xs text-slate-500">
-        O sinal do valor vem do tipo. Reimportar a mesma planilha sobrescreve esta edição.
+        {nota ?? "O sinal do valor vem do tipo. Reimportar a mesma planilha sobrescreve esta edição."}
       </p>
 
       {erros.length > 0 && (

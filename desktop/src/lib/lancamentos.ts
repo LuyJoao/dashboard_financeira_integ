@@ -44,3 +44,12 @@ export function parseValorBRL(texto: string): number | null {
 export function valorParaCampo(centavos: number): string {
   return (Math.abs(centavos) / 100).toFixed(2).replace(".", ",");
 }
+
+// As 3 contas atuais (decisão da supervisora: só estas, só de 2026 em diante).
+export const CONTAS_FIXAS = ["104 - Caixa", "136 - Unicred", "341 - Itaú"];
+
+// Data de hoje no horário local, no formato AAAA-MM-DD (toISOString usaria UTC e poderia dar o dia seguinte).
+export function hojeISO(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}

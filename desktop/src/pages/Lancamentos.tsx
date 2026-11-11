@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { atualizarLancamento, excluirLancamento, Lancamento, LancamentoEdicao, listarLancamentos } from "../api/lancamentos";
+import { atualizarLancamento, criarLancamento, excluirLancamento, Lancamento, LancamentoEdicao, listarLancamentos } from "../api/lancamentos";
 import { mensagemErro } from "../api/client";
 import { DataTable } from "../components/DataTable";
 import { BarraFiltros, FiltroData, FiltroSelect, FiltroTexto } from "../components/Filtros";
@@ -10,7 +10,7 @@ import { Modal } from "../components/Modal";
 import { btnCls } from "../components/ui";
 import { useFiltros } from "../hooks/useFiltros";
 import { formatBRL, formatData } from "../lib/format";
-import { validar } from "../lib/lancamentos";
+import { CONTAS_FIXAS, hojeISO, validar } from "../lib/lancamentos";
 
 const semId = ({ id: _id, ...resto }: Lancamento): LancamentoEdicao => resto;
 const inconsistente = (l: Lancamento) => validar(semId(l)).length > 0;
@@ -28,6 +28,7 @@ export default function Lancamentos() {
 
   const [editando, setEditando] = useState<Lancamento | null>(null);
   const [excluindo, setExcluindo] = useState<Lancamento | null>(null);
+  const [criando, setCriando] = useState(false);
 
   // Depois de editar ou excluir, atualiza a lista e o dashboard
   const atualizarTelas = () => {
@@ -49,6 +50,14 @@ export default function Lancamentos() {
     },
   });
 
+  const criar = useMutation({
+    mutationFn: (dados: LancamentoEdicao) => criarLancamento(dados),
+    onSuccess: () => {
+      setCriando(false);
+      atualizarTelas();
+    },
+  });
+
   const banco = f.get("banco");
   const categoria = f.get("categoria");
   const tipo = f.get("tipo");
@@ -62,6 +71,16 @@ export default function Lancamentos() {
   const contas = useMemo(() => Array.from(new Set(todos.map((l) => l.banco))).sort(), [todos]);
   const categorias = useMemo(() => Array.from(new Set(todos.map((l) => l.categoria))).sort(), [todos]);
   const qtdInconsistentes = useMemo(() => todos.filter(inconsistente).length, [todos]);
+  const contasForm = CONTAS_FIXAS;
+  const novoVazio = (): LancamentoEdicao => ({
+    data: hojeISO(),
+    banco: contasForm[0],
+    categoria: categorias[0] ?? "",
+    tipo: "Despesa",
+    descricao: "",
+    observacao: "",
+    valor: 0,
+  });
 
   const filtrados = useMemo(
     () =>
@@ -148,7 +167,18 @@ export default function Lancamentos() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Lançamentos</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Lançamentos</h1>
+        <button
+          className={btnCls}
+          onClick={() => {
+            criar.reset();
+            setCriando(true);
+          }}
+        >
+          + Novo lançamento
+        </button>
+      </div>
 
       <BarraFiltros mostrarLimpar={f.temFiltro} onLimpar={f.limpar}>
         <FiltroSelect label="Conta" valor={banco} onChange={(v) => f.set("banco", v)} opcoes={contas} />
@@ -175,11 +205,26 @@ export default function Lancamentos() {
         vazio={filtrosAtivos ? "Nenhum lançamento com esses filtros." : "Nenhum lançamento importado ainda."}
       />
 
+      {criando && (
+        <Modal titulo="Novo lançamento" onFechar={() => !criar.isPending && setCriando(false)}>
+          <FormLancamento
+            inicial={novoVazio()}
+            contas={contasForm}
+            categorias={categorias}
+            enviando={criar.isPending}
+            erroServidor={criar.isError ? mensagemErro(criar.error) : undefined}
+            nota="O sinal do valor vem do tipo. Lançamentos criados aqui não são afetados por reimportações de planilha."
+            onSalvar={(dados) => criar.mutate(dados)}
+            onCancelar={() => setCriando(false)}
+          />
+        </Modal>
+      )}
+
       {editando && (
         <Modal titulo="Editar lançamento" onFechar={() => !salvar.isPending && setEditando(null)}>
           <FormLancamento
             inicial={editando}
-            contas={contas}
+            contas={contasForm}
             categorias={categorias}
             enviando={salvar.isPending}
             erroServidor={salvar.isError ? mensagemErro(salvar.error) : undefined}

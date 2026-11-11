@@ -20,6 +20,7 @@ let DADOS: Lancamento[] = [
   { id: 15, data: "2026-06-25", banco: "104 - Caixa", categoria: "Vendas Bazar", tipo: "Receita", descricao: "Venda de itens do bazar", observacao: "", valor: 87450 },
   { id: 16, data: "2026-05-20", banco: "104 - Caixa", categoria: "Análises de Águas", tipo: "Despesa", descricao: "Análise de água (cliente)", observacao: "", valor: 65000 },
 ];
+let DADOS_MANUAIS: Lancamento[] = [];
 
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -36,10 +37,28 @@ export async function atualizarMock(id: number, dados: LancamentoEdicao): Promis
   const i = DADOS.findIndex((l) => l.id === id);
   if (i < 0) throw new Error("lançamento não encontrado");
   DADOS[i] = { id, ...dados };
+  const manual = DADOS_MANUAIS.findIndex((l) => l.id === id);
+  if (manual >= 0) DADOS_MANUAIS[manual] = DADOS[i];
   return DADOS[i];
 }
 
 export async function excluirMock(id: number): Promise<void> {
   await esperar(500);
   DADOS = DADOS.filter((l) => l.id !== id);
+  DADOS_MANUAIS = DADOS_MANUAIS.filter((l) => l.id !== id);
+}
+
+let proximoId = 17;
+
+export async function criarMock(dados: LancamentoEdicao): Promise<Lancamento> {
+  await esperar(500);
+  if (dados.descricao.toLowerCase().includes("falha")) throw new Error("falha simulada");
+  const novo: Lancamento = { id: proximoId++, ...dados };
+  DADOS = [...DADOS, novo];
+  DADOS_MANUAIS = [...DADOS_MANUAIS, novo];
+  return novo;
+}
+
+export function listarManuaisMock(): Lancamento[] {
+  return DADOS_MANUAIS.map((l) => ({ ...l }));
 }
