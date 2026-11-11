@@ -39,5 +39,6 @@ export function mensagemErro(e: unknown, padrao = "Algo deu errado. Tente novame
     if (typeof d === "string") return d;
     if (!e.response) return "Não foi possível conectar ao servidor.";
   }
+  if (e instanceof Error && e.message) return e.message;
   return padrao;
 }
