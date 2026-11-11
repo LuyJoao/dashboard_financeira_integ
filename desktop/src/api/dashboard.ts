@@ -3,39 +3,46 @@ import { buscarDashboardMock } from "./dashboardMock";
 
 // ---------- Contrato com o back-end ----------
 // GET /api/dashboard  ->  DadosDashboard
-// Todos os valores em CENTAVOS, com o sinal original (despesas negativas).
-// "receitas" e "despesas" NÃO incluem o principal de aplicações e resgates (vêm em "aplicacoes" e "resgates").
-// Rendimentos de aplicação entram em "receitas" (categoria "Rendimentos de Aplicações").
+// A API devolve linhas JÁ AGREGADAS por (mês, conta, categoria, movimento); o front filtra por mês, conta e categoria.
+// Valores em CENTAVOS, com o sinal original (despesas negativas).
+// "movimento" só é preenchido na categoria "Aplicação Financeira":
+//   "aplicacao" = dinheiro que saiu da conta para investir, "resgate" = voltou do investimento, "rendimento" = rendimento.
+// Nas demais categorias é null.
 
-export type ResumoMes = {
+export type Movimento = "aplicacao" | "resgate" | "rendimento";
+
+export type LinhaResumo = {
   mes: string; // "Jan/26"
-  receitas: number;
-  despesas: number; // negativo
-  aplicacoes: number; // negativo: dinheiro que saiu da conta para investir
-  resgates: number; // positivo: dinheiro que voltou do investimento
+  conta: string; // "104 - Caixa"
+  categoria: string;
+  movimento: Movimento | null;
+  receitas: number; // soma dos valores positivos
+  despesas: number; // soma dos valores negativos (negativo)
 };
-
-export type ResumoCategoria = { categoria: string; receitas: number; despesas: number }; // despesas negativo
 
 export type SaldoContaMes = {
   mes: string;
-  conta: string; // "104 - Caixa"
-  saldo_inicial: number;
+  conta: string;
+  saldo_inicial: number; // informado
   entradas: number;
   saidas: number; // negativo
-  saldo_final: number; // calculado pelos lançamentos
-  saldo_informado: number; // do extrato
-  diferenca: number;
+  saldo_final: number; // calculado: inicial + entradas + saídas
+  saldo_informado: number; // informado (extrato)
+  diferenca: number; // ARRED(calculado − informado; 2)
   status: "OK" | "DIVERGÊNCIA";
 };
+
+export type SaldoAplicadoMes = { mes: string; saldo_inicial: number; saldo_final: number }; // informado no sistema
 
 export type DadosDashboard = {
   instituicao: string;
   atualizado_em: string; // data e hora da última importação
   contas: string[];
-  meses: ResumoMes[];
-  categorias: ResumoCategoria[];
+  categorias: string[];
+  meses: string[]; // em ordem cronológica
+  resumo: LinhaResumo[];
   saldos: SaldoContaMes[];
+  aplicado: SaldoAplicadoMes[];
 };
 
 // Enquanto o back-end não existe, usa dados de exemplo. Para usar a API de verdade: VITE_USE_MOCK=false no desktop/.env
