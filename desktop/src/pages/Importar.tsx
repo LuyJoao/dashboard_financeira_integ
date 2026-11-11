@@ -1,32 +1,61 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   confirmarImportacao,
   enviarPrevia,
   ErroLinha,
   Importacao,
+  LinhaAtualizada,
   LinhaPrevia,
   listarImportacoes,
   Previa,
 } from "../api/importacoes";
 import { mensagemErro } from "../api/client";
+import type { LancamentoEdicao, Tipo } from "../api/lancamentos";
 import { Cartao } from "../components/Cartao";
 import { DataTable } from "../components/DataTable";
 import { Carregando, ErroMsg } from "../components/estados";
+import { FormLancamento } from "../components/FormLancamento";
+import { FormSaldos } from "../components/importar/FormSaldos";
+import { TabelaErros } from "../components/importar/TabelaErros";
+import { Modal } from "../components/Modal";
 import { UploadArquivo } from "../components/UploadArquivo";
 import { btnCls } from "../components/ui";
 import { formatBRL, formatData, formatDataHora } from "../lib/format";
+import { CONTAS_FIXAS } from "../lib/lancamentos";
+import { ajustesDasCorrecoes, chave, conciliar, EstadoSaldos, iniciarSaldos, montarSaldos } from "../lib/saldos";
 
-// Decisão em aberto com a supervisora: se der erro em algumas linhas, importa só as válidas?
-// true  = permite importar as linhas válidas (as com erro são ignoradas)
-// false = só permite importar se a planilha não tiver nenhum erro
+// Se sobrarem linhas com erro: true = importa as demais e ignora as com erro; false = só importa sem nenhum erro.
 const PERMITE_IMPORTAR_COM_ERROS = true;
+
+// Sugestão inicial para corrigir uma linha. O sinal do valor bate com o extrato; o Tipo é o que costuma estar errado.
+// Por isso o tipo sugerido vem do sinal.
+function brutoParaEdicao(e: ErroLinha): LancamentoEdicao {
+  const b = e.bruto;
+  const tipo: Tipo = b.valor > 0 ? "Receita" : b.tipo === "Investimento" ? "Investimento" : "Despesa";
+  return {
+    data: /^\d{4}-\d{2}-\d{2}$/.test(b.data) ? b.data : "",
+    banco: CONTAS_FIXAS.includes(b.banco) ? b.banco : CONTAS_FIXAS[0],
+    categoria: b.categoria,
+    tipo,
+    descricao: b.descricao,
+    observacao: b.observacao,
+    valor: b.valor,
+  };
+}
+
+const emblema = (cor: string, texto: string) => <span className={`rounded-full px-2 py-0.5 text-xs ${cor}`}>{texto}</span>;
 
 const colAmostra: ColumnDef<LinhaPrevia>[] = [
   { accessorKey: "linha", header: "Linha" },
+  {
+    accessorKey: "situacao",
+    header: "Situação",
+    cell: (i) => (i.getValue<string>() === "nova" ? emblema("bg-green-100 text-green-800", "Nova") : emblema("bg-amber-100 text-amber-800", "Atualizada")),
+  },
   { accessorKey: "data", header: "Data", cell: (i) => formatData(i.getValue<string>()) },
-  { accessorKey: "banco", header: "Banco" },
+  { accessorKey: "banco", header: "Conta" },
   { accessorKey: "categoria", header: "Categoria" },
   { accessorKey: "descricao", header: "Descrição" },
   {
@@ -40,10 +69,21 @@ const colAmostra: ColumnDef<LinhaPrevia>[] = [
   },
 ];
 
-const colErros: ColumnDef<ErroLinha>[] = [
+const colAtualizadas: ColumnDef<LinhaAtualizada>[] = [
   { accessorKey: "linha", header: "Linha" },
-  { accessorKey: "coluna", header: "Coluna" },
-  { accessorKey: "mensagem", header: "Problema" },
+  { accessorKey: "descricao", header: "Descrição" },
+  {
+    accessorKey: "mudancas",
+    header: "O que muda",
+    enableSorting: false,
+    cell: (i) => (
+      <div>
+        {i.getValue<string[]>().map((m) => (
+          <div key={m}>{m}</div>
+        ))}
+      </div>
+    ),
+  },
 ];
 
 const colHistorico: ColumnDef<Importacao>[] = [
@@ -51,17 +91,13 @@ const colHistorico: ColumnDef<Importacao>[] = [
   { accessorKey: "arquivo_nome", header: "Arquivo" },
   { accessorKey: "usuario_nome", header: "Enviado por" },
   { accessorKey: "linhas_total", header: "Linhas", meta: { align: "right" } },
-  { accessorKey: "linhas_ok", header: "Importadas", meta: { align: "right" } },
+  { accessorKey: "linhas_novas", header: "Novas", meta: { align: "right" } },
+  { accessorKey: "linhas_atualizadas", header: "Atualizadas", meta: { align: "right" } },
   { accessorKey: "linhas_erro", header: "Com erro", meta: { align: "right" } },
   {
     accessorKey: "status",
     header: "Status",
-    cell: (i) =>
-      i.getValue<string>() === "concluida" ? (
-        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800">Concluída</span>
-      ) : (
-        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">Com erros</span>
-      ),
+    cell: (i) => (i.getValue<string>() === "concluida" ? emblema("bg-green-100 text-green-800", "Concluída") : emblema("bg-amber-100 text-amber-800", "Com erros")),
   },
 ];
 
@@ -70,8 +106,18 @@ export default function Importar() {
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [previa, setPrevia] = useState<Previa | null>(null);
   const [concluida, setConcluida] = useState<Importacao | null>(null);
+  const [correcoes, setCorrecoes] = useState<Record<number, LancamentoEdicao>>({});
+  const [corrigindo, setCorrigindo] = useState<ErroLinha | null>(null);
+  const [saldos, setSaldos] = useState<EstadoSaldos | null>(null);
 
-  const gerarPrevia = useMutation({ mutationFn: enviarPrevia, onSuccess: setPrevia });
+  const gerarPrevia = useMutation({
+    mutationFn: enviarPrevia,
+    onSuccess: (p) => {
+      setPrevia(p);
+      setSaldos(iniciarSaldos(p));
+      setCorrecoes({});
+    },
+  });
 
   const confirmar = useMutation({
     mutationFn: confirmarImportacao,
@@ -79,10 +125,29 @@ export default function Importar() {
       setConcluida(imp);
       setPrevia(null);
       qc.invalidateQueries({ queryKey: ["importacoes"] });
+      qc.invalidateQueries({ queryKey: ["lancamentos"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 
   const historico = useQuery({ queryKey: ["importacoes"], queryFn: listarImportacoes });
+  const abrirCorrecao = useCallback((e: ErroLinha) => setCorrigindo(e), []);
+
+  const corrigidas = Object.keys(correcoes).length;
+  const errosRestantes = previa ? previa.linhas_erro - corrigidas : 0;
+  const aImportar = previa ? previa.novas + previa.atualizadas + corrigidas : 0;
+  const dadosSaldos = useMemo(() => (previa && saldos ? montarSaldos(previa, saldos) : null), [previa, saldos]);
+  const divergencias = useMemo(() => {
+    if (!previa || !saldos) return 0;
+    const ajustes = ajustesDasCorrecoes(correcoes);
+    return previa.saldos.filter((s) => {
+      const k = chave(s.mes, s.conta);
+      const campo = saldos.contas[k];
+      return campo ? conciliar(s, campo, ajustes[k]).status === "DIVERGÊNCIA" : false;
+    }).length;
+  }, [previa, saldos, correcoes]);
+
+  const bloqueado = confirmar.isPending || !dadosSaldos || (errosRestantes > 0 && !PERMITE_IMPORTAR_COM_ERROS);
 
   function escolher(f: File) {
     setArquivo(f);
@@ -94,21 +159,33 @@ export default function Importar() {
     setArquivo(null);
     setPrevia(null);
     setConcluida(null);
+    setCorrecoes({});
+    setSaldos(null);
     gerarPrevia.reset();
     confirmar.reset();
   }
 
+  function aoConfirmar() {
+    if (!previa || !dadosSaldos) return;
+    confirmar.mutate({
+      token: previa.token,
+      correcoes: Object.entries(correcoes).map(([linha, dados]) => ({ linha: Number(linha), dados })),
+      saldos: dadosSaldos.saldos,
+      aplicado: dadosSaldos.aplicado,
+    });
+  }
+
   return (
-    <div className="max-w-5xl space-y-8">
+    <div className="max-w-6xl space-y-8">
       <section className="space-y-4">
         <h1 className="text-xl font-semibold">Importar planilha Excel</h1>
 
-        {/* Etapa 3: concluída */}
+        {/* Etapa final: concluída */}
         {concluida && (
           <div className="space-y-3 rounded-xl border border-green-200 bg-green-50 p-6 text-sm text-green-900">
             <p className="font-medium">Importação concluída: {concluida.arquivo_nome}</p>
             <p>
-              {concluida.linhas_ok} linhas importadas
+              {concluida.linhas_novas} linhas novas, {concluida.linhas_atualizadas} atualizadas
               {concluida.linhas_erro > 0 && `, ${concluida.linhas_erro} ignoradas por erro`}.
             </p>
             <button className={btnCls} onClick={recomecar}>
@@ -122,74 +199,82 @@ export default function Importar() {
           <>
             <UploadArquivo onArquivo={escolher} disabled={gerarPrevia.isPending} />
             {gerarPrevia.isPending && <Carregando texto="Lendo e validando a planilha..." />}
-            {gerarPrevia.isError && (
-              <ErroMsg erro={gerarPrevia.error} onRetry={() => arquivo && gerarPrevia.mutate(arquivo)} />
-            )}
+            {gerarPrevia.isError && <ErroMsg erro={gerarPrevia.error} onRetry={() => arquivo && gerarPrevia.mutate(arquivo)} />}
           </>
         )}
 
-        {/* Etapa 2: prévia */}
-        {!concluida && previa && (
-          <div className="space-y-4">
+        {/* Etapa 2: prévia, correções e saldos */}
+        {!concluida && previa && saldos && (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <p className="text-sm text-slate-600">
-                Arquivo: <span className="font-medium text-slate-900">{previa.arquivo_nome}</span>
+                Arquivo: <span className="font-medium text-slate-900">{previa.arquivo_nome}</span> · Meses: {previa.periodos.join(", ")}
               </p>
               <button className="text-sm text-slate-500 hover:text-slate-900" onClick={recomecar}>
                 Escolher outro arquivo
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               <Cartao titulo="Linhas lidas" valor={previa.total_linhas} />
-              <Cartao titulo="Linhas válidas" valor={previa.linhas_ok} destaque="ok" />
-              <Cartao titulo="Linhas com erro" valor={previa.linhas_erro} destaque={previa.linhas_erro ? "erro" : undefined} />
-              <Cartao titulo="Meses encontrados" valor={previa.periodos.length} />
+              <Cartao titulo="Novas" valor={previa.novas + corrigidas} destaque="ok" />
+              <Cartao titulo="Atualizadas" valor={previa.atualizadas} />
+              <Cartao titulo="Iguais (ignoradas)" valor={previa.iguais} />
+              <Cartao titulo="Com erro" valor={errosRestantes} destaque={errosRestantes > 0 ? "erro" : undefined} />
             </div>
-            <p className="text-xs text-slate-500">Meses: {previa.periodos.join(", ")}</p>
 
-            {previa.linhas_erro > 0 && (
+            {previa.atualizadas > 0 && (
               <div className="space-y-2">
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                  {PERMITE_IMPORTAR_COM_ERROS
-                    ? `${previa.linhas_erro} linha(s) têm problemas e NÃO serão importadas. Corrija na planilha e envie de novo, ou importe só as válidas.`
-                    : `${previa.linhas_erro} linha(s) têm problemas. Corrija a planilha e envie de novo.`}
+                  {previa.atualizadas} linha(s) já existem e são diferentes. Ao confirmar, a planilha <strong>sobrescreve</strong> o que está no sistema,
+                  inclusive edições feitas à mão nessas linhas.
+                </div>
+                <h2 className="text-sm font-medium">Linhas que serão atualizadas</h2>
+                <DataTable columns={colAtualizadas} data={previa.atualizadas_detalhe} pageSize={5} />
+              </div>
+            )}
+
+            {previa.erros.length > 0 && (
+              <div className="space-y-2">
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+                  {errosRestantes > 0
+                    ? PERMITE_IMPORTAR_COM_ERROS
+                      ? `${errosRestantes} linha(s) com erro. Corrija na tela ou elas serão ignoradas.`
+                      : `${errosRestantes} linha(s) com erro. Corrija todas para poder confirmar.`
+                    : "Todas as linhas com erro foram corrigidas."}
                 </div>
                 <h2 className="text-sm font-medium">Linhas com erro</h2>
-                <DataTable columns={colErros} data={previa.erros} pageSize={10} />
+                <TabelaErros erros={previa.erros} correcoes={correcoes} onCorrigir={abrirCorrecao} />
               </div>
             )}
 
             <div className="space-y-2">
-              <h2 className="text-sm font-medium">Prévia das primeiras linhas válidas</h2>
+              <h2 className="text-sm font-medium">Prévia das linhas novas e atualizadas</h2>
               <DataTable columns={colAmostra} data={previa.amostra} pageSize={10} />
             </div>
 
-            {confirmar.isError && (
-              <p className="text-sm text-red-600">{mensagemErro(confirmar.error)}</p>
-            )}
+            <div className="space-y-2">
+              <h2 className="text-sm font-medium">Saldos informados</h2>
+              <FormSaldos previa={previa} estado={saldos} correcoes={correcoes} onChange={setSaldos} />
+              {divergencias > 0 && (
+                <p className="text-sm text-amber-800">
+                  {divergencias} conta(s) com divergência entre o saldo calculado e o informado. Você pode confirmar mesmo assim, mas vale conferir o extrato.
+                </p>
+              )}
+            </div>
+
+            {confirmar.isError && <p className="text-sm text-red-600">{mensagemErro(confirmar.error)}</p>}
+            {!dadosSaldos && <p className="text-sm text-slate-500">Preencha todos os saldos para poder confirmar.</p>}
 
             <div className="flex gap-3">
-              <button
-                className={btnCls}
-                disabled={
-                  confirmar.isPending ||
-                  previa.linhas_ok === 0 ||
-                  (previa.linhas_erro > 0 && !PERMITE_IMPORTAR_COM_ERROS)
-                }
-                onClick={() => confirmar.mutate(previa.token)}
-              >
+              <button className={btnCls} disabled={bloqueado} onClick={aoConfirmar}>
                 {confirmar.isPending
                   ? "Importando..."
-                  : previa.linhas_erro > 0
-                    ? `Importar ${previa.linhas_ok} linhas válidas`
-                    : `Confirmar importação (${previa.linhas_ok} linhas)`}
+                  : errosRestantes > 0
+                    ? `Importar ${aImportar} linhas (${errosRestantes} com erro serão ignoradas)`
+                    : `Confirmar importação (${aImportar} linhas)`}
               </button>
-              <button
-                className="rounded-md border px-4 py-2 text-sm hover:bg-slate-50"
-                onClick={recomecar}
-                disabled={confirmar.isPending}
-              >
+              <button className="rounded-md border px-4 py-2 text-sm hover:bg-slate-50" onClick={recomecar} disabled={confirmar.isPending}>
                 Cancelar
               </button>
             </div>
@@ -209,6 +294,24 @@ export default function Importar() {
           vazio="Nenhuma planilha foi importada ainda."
         />
       </section>
+
+      {corrigindo && previa && (
+        <Modal titulo={`Corrigir a linha ${corrigindo.linha}`} onFechar={() => setCorrigindo(null)}>
+          <p className="mb-3 rounded-md bg-amber-50 p-2 text-sm text-amber-900">{corrigindo.mensagem}</p>
+          <FormLancamento
+            inicial={correcoes[corrigindo.linha] ?? brutoParaEdicao(corrigindo)}
+            contas={CONTAS_FIXAS}
+            categorias={previa.categorias}
+            enviando={false}
+            nota="A correção vale só para esta importação. Corrija também a planilha se for reutilizá-la."
+            onSalvar={(dados) => {
+              setCorrecoes((c) => ({ ...c, [corrigindo.linha]: dados }));
+              setCorrigindo(null);
+            }}
+            onCancelar={() => setCorrigindo(null)}
+          />
+        </Modal>
+      )}
     </div>
   );
 }
