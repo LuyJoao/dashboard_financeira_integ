@@ -254,7 +254,7 @@ export default function Importar() {
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-sm font-medium">Saldos informados</h2>
+              <h2 className="text-sm font-medium">Saldos das contas e do investimento</h2>
               <FormSaldos previa={previa} estado={saldos} correcoes={correcoes} onChange={setSaldos} />
               {divergencias > 0 && (
                 <p className="text-sm text-amber-800">

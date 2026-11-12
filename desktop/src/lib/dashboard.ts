@@ -78,7 +78,8 @@ export function calcular(d: DadosDashboard, f: Filtros) {
     serieMeses,
     categorias,
     saldosDoMes: doMes,
-    divergencias: doMes.filter((s) => s.status !== "OK").length,
+    divergencias: doMes.filter((s) => s.status === "DIVERGÊNCIA").length,
+    naoConferidos: doMes.filter((s) => s.status === "NÃO CONFERIDO").length,
     mostrarAplicado,
   };
 }

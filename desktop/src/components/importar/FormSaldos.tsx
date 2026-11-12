@@ -18,8 +18,8 @@ export function FormSaldos({ previa, estado, correcoes, onChange }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-slate-600">
-        Informe o saldo inicial e o saldo final de cada conta, como no extrato. O sistema compara o saldo calculado (inicial + entradas + saídas) com o
-        informado.
+        Os saldos foram lidos do extrato (coluna Saldo Após Lançamento). Confira e corrija se precisar. O sistema compara o saldo calculado (inicial +
+        entradas + saídas) com o saldo do extrato.
       </p>
 
       <div className="overflow-x-auto rounded-xl border bg-white">
@@ -58,6 +58,7 @@ export function FormSaldos({ previa, estado, correcoes, onChange }: Props) {
                   <td className="p-2 text-right text-red-700">{formatBRL(r.saidas)}</td>
                   <td className="p-2 text-right">{r.calculado === null ? "—" : formatBRL(r.calculado)}</td>
                   <td className="p-2 text-right">
+                    {s.lido_do_extrato && <span className="mb-0.5 block text-xs text-slate-400">do extrato</span>}
                     <input
                       className={campo}
                       inputMode="decimal"
@@ -103,6 +104,11 @@ export function FormSaldos({ previa, estado, correcoes, onChange }: Props) {
               </label>
             ))}
           </div>
+          {previa.aplicado[0].calculado && (
+            <p className="mt-3 text-xs text-slate-500">
+              Calculado como aplicações menos resgates. Se quiser o valor real do investimento, digite o saldo do extrato da aplicação.
+            </p>
+          )}
         </div>
       )}
     </div>

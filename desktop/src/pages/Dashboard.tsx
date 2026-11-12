@@ -55,6 +55,12 @@ export default function Dashboard() {
         </p>
       )}
 
+      {v.naoConferidos > 0 && (
+        <p className="rounded-md bg-slate-100 p-3 text-sm text-slate-600">
+          {v.naoConferidos} conta(s) sem saldo do extrato em {v.mes}: o saldo é calculado a partir dos lançamentos e ainda não foi conferido com o banco.
+        </p>
+      )}
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Cartao titulo={`Saldo nas contas (fim de ${v.mes})`} valor={brl(v.saldoContas)} />
         <Cartao titulo="Saldo aplicado" valor={brl(v.saldoAplicado)} />

@@ -39,7 +39,9 @@ export type LinhaPrevia = {
 
 export type LinhaAtualizada = { linha: number; descricao: string; mudancas: string[] };
 
-// Soma de entradas e saídas do mês na conta (sem as linhas com erro) e os saldos já conhecidos pelo sistema (ou null).
+// Soma de entradas e saídas do mês na conta (sem as linhas com erro) e os saldos que o back-end conseguiu obter.
+// Regra de leitura (docs/regra-saldos.md): saldo final = "Saldo Após Lançamento" da última linha do mês na conta;
+// saldo inicial = "Saldo Após Lançamento" da primeira linha menos o valor dela. Se não der para ler, vem null e o usuário digita.
 export type SaldoSugerido = {
   mes: string;
   conta: string;
@@ -47,8 +49,10 @@ export type SaldoSugerido = {
   saidas: number; // negativo
   saldo_inicial: number | null;
   saldo_final_informado: number | null;
+  lido_do_extrato: boolean; // true = os dois saldos foram lidos do extrato (o usuário só confere)
 };
-export type AplicadoSugerido = { mes: string; saldo_inicial: number | null; saldo_final: number | null };
+// Saldo aplicado CALCULADO (aplicações menos resgates, acumulado). O usuário pode sobrescrever com o saldo real do investimento.
+export type AplicadoSugerido = { mes: string; saldo_inicial: number | null; saldo_final: number | null; calculado: boolean };
 
 export type Previa = {
   token: string; // identifica esta prévia na hora de confirmar

@@ -27,9 +27,9 @@ export type SaldoContaMes = {
   entradas: number;
   saidas: number; // negativo
   saldo_final: number; // calculado: inicial + entradas + saídas
-  saldo_informado: number; // informado (extrato)
+  saldo_informado: number; // do extrato; em mês sem extrato (só lançamentos manuais) é o saldo calculado
   diferenca: number; // ARRED(calculado − informado; 2)
-  status: "OK" | "DIVERGÊNCIA";
+  status: "OK" | "DIVERGÊNCIA" | "NÃO CONFERIDO"; // NÃO CONFERIDO = não há saldo do extrato (saldo calculado dos lançamentos)
 };
 
 export type SaldoAplicadoMes = { mes: string; saldo_inicial: number; saldo_final: number }; // informado no sistema

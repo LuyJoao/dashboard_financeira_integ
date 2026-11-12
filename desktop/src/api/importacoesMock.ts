@@ -1,7 +1,8 @@
 import type { ConfirmacaoImportacao, Importacao, Previa } from "./importacoes";
 
 // Dados falsos gerados a partir da planilha real. Como testar:
-//  - qualquer .xlsx          -> prévia com 3 linhas com erro (linhas 187, 195 e 320 da Base), para corrigir na tela
+//  - qualquer .xlsx          -> prévia com 3 linhas com erro (linhas 187, 195 e 320 da Base), para corrigir na tela.
+//                               Os saldos já vêm lidos do extrato; as 3 linhas fora da soma causam divergência até serem corrigidas
 //  - nome contendo "limpo"   -> prévia sem erros
 //  - nome contendo "falha"   -> erro do servidor
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -179,7 +180,8 @@ const BASE = {
    "entradas": 1555000,
    "saidas": -1007100,
    "saldo_inicial": 1224614,
-   "saldo_final_informado": null
+   "saldo_final_informado": 1437514,
+   "lido_do_extrato": true
   },
   {
    "mes": "Mai/26",
@@ -187,7 +189,8 @@ const BASE = {
    "entradas": 5168883,
    "saidas": -8656409,
    "saldo_inicial": 4370670,
-   "saldo_final_informado": null
+   "saldo_final_informado": 883144,
+   "lido_do_extrato": true
   },
   {
    "mes": "Mai/26",
@@ -195,7 +198,8 @@ const BASE = {
    "entradas": 6500,
    "saidas": -16900,
    "saldo_inicial": 46959,
-   "saldo_final_informado": null
+   "saldo_final_informado": 36559,
+   "lido_do_extrato": true
   },
   {
    "mes": "Jun/26",
@@ -203,7 +207,8 @@ const BASE = {
    "entradas": 1549600,
    "saidas": -1616814,
    "saldo_inicial": 1437514,
-   "saldo_final_informado": null
+   "saldo_final_informado": 1370300,
+   "lido_do_extrato": true
   },
   {
    "mes": "Jun/26",
@@ -211,7 +216,8 @@ const BASE = {
    "entradas": 1678547,
    "saidas": -3971000,
    "saldo_inicial": 883144,
-   "saldo_final_informado": null
+   "saldo_final_informado": 590692,
+   "lido_do_extrato": true
   },
   {
    "mes": "Jun/26",
@@ -219,7 +225,8 @@ const BASE = {
    "entradas": 6601,
    "saidas": -16900,
    "saldo_inicial": 36559,
-   "saldo_final_informado": null
+   "saldo_final_informado": 26260,
+   "lido_do_extrato": true
   }
  ],
  "saldosLimpo": [
@@ -229,7 +236,8 @@ const BASE = {
    "entradas": 1620000,
    "saidas": -1407100,
    "saldo_inicial": 1224614,
-   "saldo_final_informado": null
+   "saldo_final_informado": 1437514,
+   "lido_do_extrato": true
   },
   {
    "mes": "Mai/26",
@@ -237,7 +245,8 @@ const BASE = {
    "entradas": 5168883,
    "saidas": -8656409,
    "saldo_inicial": 4370670,
-   "saldo_final_informado": null
+   "saldo_final_informado": 883144,
+   "lido_do_extrato": true
   },
   {
    "mes": "Mai/26",
@@ -245,7 +254,8 @@ const BASE = {
    "entradas": 6500,
    "saidas": -16900,
    "saldo_inicial": 46959,
-   "saldo_final_informado": null
+   "saldo_final_informado": 36559,
+   "lido_do_extrato": true
   },
   {
    "mes": "Jun/26",
@@ -253,7 +263,8 @@ const BASE = {
    "entradas": 1549600,
    "saidas": -1616814,
    "saldo_inicial": 1437514,
-   "saldo_final_informado": null
+   "saldo_final_informado": 1370300,
+   "lido_do_extrato": true
   },
   {
    "mes": "Jun/26",
@@ -261,7 +272,8 @@ const BASE = {
    "entradas": 3678548,
    "saidas": -3971000,
    "saldo_inicial": 883144,
-   "saldo_final_informado": null
+   "saldo_final_informado": 590692,
+   "lido_do_extrato": true
   },
   {
    "mes": "Jun/26",
@@ -269,19 +281,22 @@ const BASE = {
    "entradas": 6601,
    "saidas": -16900,
    "saldo_inicial": 36559,
-   "saldo_final_informado": null
+   "saldo_final_informado": 26260,
+   "lido_do_extrato": true
   }
  ],
  "aplicado": [
   {
    "mes": "Mai/26",
    "saldo_inicial": 51199998,
-   "saldo_final": null
+   "saldo_final": 51199998,
+   "calculado": true
   },
   {
    "mes": "Jun/26",
    "saldo_inicial": 51199998,
-   "saldo_final": null
+   "saldo_final": 49199997,
+   "calculado": true
   }
  ]
 };

@@ -23,7 +23,7 @@ export function ResumoContas({ linhas }: { linhas: SaldoContaMes[] }) {
               <td className="p-2 text-right text-green-700">{formatBRL(s.entradas)}</td>
               <td className="p-2 text-right text-red-700">{formatBRL(s.saidas)}</td>
               <td className="p-2 text-right font-medium">{formatBRL(s.saldo_informado)}</td>
-              <td className="p-2 text-center">{s.status === "OK" ? "OK" : "Divergência"}</td>
+              <td className="p-2 text-center">{s.status === "OK" ? "OK" : s.status === "DIVERGÊNCIA" ? "Divergência" : "Não conferido"}</td>
             </tr>
           ))}
         </tbody>
