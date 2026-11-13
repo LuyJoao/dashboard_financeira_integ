@@ -194,7 +194,7 @@ export default function Contas() {
         <h1 className="text-xl font-semibold">Contas a pagar e a receber</h1>
         <div className="flex gap-3">
           {ehAdmin && (
-            <button className="rounded-md border px-4 py-2 text-sm hover:bg-slate-50" onClick={() => { cadastrarEmpresa.reset(); setNovaEmpresa(true); }}>
+            <button className={btnCls} onClick={() => { cadastrarEmpresa.reset(); setNovaEmpresa(true); }}>
               + Nova empresa
             </button>
           )}
