@@ -22,8 +22,9 @@ export function Layout() {
         <nav className="flex items-center gap-1">
           <span className="mr-4 font-semibold">INTEG</span>
           <NavLink to="/" end className={linkCls}>Dashboard</NavLink>
-          <NavLink to="/empresas" className={linkCls}>Empresas</NavLink>
           <NavLink to="/lancamentos" className={linkCls}>Lançamentos</NavLink>
+          <NavLink to="/empresas" className={linkCls}>Empresas</NavLink>
+          <NavLink to="/contas" className={linkCls}>Contas</NavLink>
           <NavLink to="/importar" className={linkCls}>Importar</NavLink>
           {user!.role === "admin" && <NavLink to="/usuarios" className={linkCls}>Usuários</NavLink>}
         </nav>

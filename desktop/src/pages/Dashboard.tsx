@@ -12,6 +12,8 @@ import { BarraFiltros, FiltroSelect } from "../components/Filtros";
 import { useFiltros } from "../hooks/useFiltros";
 import { calcular } from "../lib/dashboard";
 import { formatBRL, formatDataHora } from "../lib/format";
+import { ResumoTitulos } from "../components/dashboard/ResumoTitulos";
+
 
 export default function Dashboard() {
   const consulta = useQuery({ queryKey: ["dashboard"], queryFn: buscarDashboard });
@@ -43,6 +45,7 @@ export default function Dashboard() {
         <p className="text-xs text-slate-400">Dados atualizados em {formatDataHora(d.atualizado_em)}</p>
       </header>
 
+      <ResumoTitulos />
       <BarraFiltros mostrarLimpar={f.temFiltro} onLimpar={f.limpar}>
         <FiltroSelect label="Mês" valor={mes} onChange={(x) => f.set("mes", x)} opcoes={d.meses} todas="Último mês" />
         <FiltroSelect label="Conta" valor={conta} onChange={(x) => f.set("conta", x)} opcoes={d.contas} />

@@ -9,6 +9,7 @@ import Usuarios from "./pages/Usuarios";
 import Lancamentos from "./pages/Lancamentos";
 import Importar from "./pages/Importar";
 import Dashboard from "./pages/Dashboard";
+import Contas from "./pages/Contas";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="empresas" element={<Placeholder titulo="Empresas e pagamentos" />} />
           <Route path="importar" element={<Importar />} />
           <Route path="lancamentos" element={<Lancamentos />} />
+          <Route path="contas" element={<Contas />} />  
           <Route element={<ProtectedRoute admin />}>
             <Route path="usuarios" element={<Usuarios />} />
           </Route>

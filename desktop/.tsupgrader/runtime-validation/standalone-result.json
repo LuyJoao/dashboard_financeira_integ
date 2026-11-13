@@ -1,0 +1,108 @@
+{
+  "planHash": "5959b9a4fae2bde8dacd6e11585304d583bcd5ededc44b2354c30a4b7374d2f6",
+  "phase": "standalone",
+  "recordedAtUtc": "2026-11-12T22:06:14.9836830Z",
+  "retryCount": 1,
+  "resetBaseline": false,
+  "complete": true,
+  "result": {
+    "setupSucceeded": true,
+    "setupDurationMs": 42134,
+    "setupFailureOutput": null,
+    "assertions": [
+      {
+        "name": "build-pass",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E pagamentos-desktop@0.1.0 build\r\n\u003E tsc --noEmit \u0026\u0026 vite build\r\n\r\n\u001B[36mvite v6.4.4 \u001B[32mbuilding for production...\u001B[36m\u001B[39m\r\ntransforming...\r\n\u001B[32m\u2713\u001B[39m 767 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\n\u001B[2mdist/\u001B[22m\u001B[32mindex.html                 \u001B[39m\u001B[1m\u001B[2m  0.40 kB\u001B[22m\u001B[1m\u001B[22m\u001B[2m \u2502 gzip:   0.27 kB\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[35massets/index-TYKlX-NB.css  \u001B[39m\u001B[1m\u001B[2m 17.01 kB\u001B[22m\u001B[1m\u001B[22m\u001B[2m \u2502 gzip:   4.18 kB\u001B[22m\r\n\u001B[2mdist/\u001B[22m\u001B[36massets/index-f73g_4xh.js   \u001B[39m\u001B[1m\u001B[33m804.73 kB\u001B[39m\u001B[22m\u001B[2m \u2502 gzip: 240.55 kB\u001B[22m\r\n\u001B[33m\r\n(!) Some chunks are larger than 500 kB after minification. Consider:\r\n- Using dynamic import() to code-split the application\r\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\r\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001B[39m\r\n\u001B[32m\u2713 built in 9.56s\u001B[39m\r\n",
+        "durationMs": 14647
+      },
+      {
+        "name": "dev-server-serves-home",
+        "kind": "http-probe",
+        "verificationMethod": "http-status",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": null,
+        "outputSample": "HTTP 200\n\u003C!doctype html\u003E\n\u003Chtml lang=\u0022pt-BR\u0022\u003E\n  \u003Chead\u003E\n    \u003Cscript type=\u0022module\u0022\u003Eimport { injectIntoGlobalHook } from \u0022/@react-refresh\u0022;\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () =\u003E {};\nwindow.$RefreshSig$ = () =\u003E (type) =\u003E type;\u003C/script\u003E\n\n    \u003Cscript type=\u0022module\u0022 src=\u0022/@vite/client\u0022\u003E\u003C/script\u003E\n\n    \u003Cmeta charset=\u0022UTF-8\u0022 /\u003E\n    \u003Cmeta name=\u0022viewport\u0022 content=\u0022width=device-width, initial-scale=1.0\u0022 /\u003E\n    \u003Ctitle\u003EPagamentos\u003C/title\u003E\n  \u003C/head\u003E\n  \u003Cbody\u003E\n    \u003Cdiv id=\u0022root\u0022\u003E\u003C/div\u003E\n    \u003Cscript type=\u0022module\u0022 src=\u0022/src/main.tsx\u0022\u003E\u003C/script\u003E\n  \u003C/body\u003E\n\u003C/html\u003E\n\n--- server output ---\n\r\n\u003E pagamentos-desktop@0.1.0 dev\r\n\u003E vite\r\n\r\n\r\n  \u001B[32m\u001B[1mVITE\u001B[22m v6.4.4\u001B[39m  \u001B[2mready in \u001B[0m\u001B[1m395\u001B[22m\u001B[2m\u001B[0m ms\u001B[22m\r\n\r\n  \u001B[32m\u279C\u001B[39m  \u001B[1mLocal\u001B[22m:   \u001B[36mhttp://localhost:\u001B[1m5173\u001B[22m/\u001B[39m\r\n\u001B[2m  \u001B[32m\u279C\u001B[39m  \u001B[1mNetwork\u001B[22m\u001B[2m: use \u001B[22m\u001B[1m--host\u001B[22m\u001B[2m to expose\u001B[22m\r\n",
+        "durationMs": 1108
+      },
+      {
+        "name": "tests-pass",
+        "kind": "process",
+        "verificationMethod": "test-results",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E pagamentos-desktop@0.1.0 test\r\n\u003E vitest run\r\n\r\n\r\n\u001B[1m\u001B[46m RUN \u001B[49m\u001B[22m \u001B[36mv3.2.7 \u001B[39m\u001B[90mC:/Users/DELL/Documents/GitHub/dashboard_financeira_integ/desktop\u001B[39m\r\n\r\n \u001B[32m\u2713\u001B[39m src/lib/titulos.test.ts \u001B[2m(\u001B[22m\u001B[2m3 tests\u001B[22m\u001B[2m)\u001B[22m\u001B[32m 3\u001B[2mms\u001B[22m\u001B[39m\r\n\r\n\u001B[2m Test Files \u001B[22m \u001B[1m\u001B[32m1 passed\u001B[39m\u001B[22m\u001B[90m (1)\u001B[39m\r\n\u001B[2m      Tests \u001B[22m \u001B[1m\u001B[32m3 passed\u001B[39m\u001B[22m\u001B[90m (3)\u001B[39m\r\n\u001B[2m   Start at \u001B[22m 19:06:14\r\n\u001B[2m   Duration \u001B[22m 724ms\u001B[2m (transform 49ms, setup 0ms, collect 100ms, tests 3ms, environment 0ms, prepare 329ms)\u001B[22m\r\n\r\n",
+        "durationMs": 2417,
+        "testResults": {
+          "testFramework": "vitest",
+          "runnerDetectedFrom": "package_json",
+          "testsTotal": 3,
+          "testsPassed": 3,
+          "testsFailed": 0,
+          "testsSkipped": 0,
+          "parseFailed": false
+        }
+      }
+    ],
+    "executions": [
+      {
+        "source": "setup[0]",
+        "resolvedExecutable": "C:\\nvm4w\\nodejs\\npm.CMD",
+        "args": [
+          "ci"
+        ],
+        "cwd": "C:\\Users\\DELL\\Documents\\GitHub\\dashboard_financeira_integ\\desktop",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "build-pass",
+        "resolvedExecutable": "C:\\nvm4w\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "build"
+        ],
+        "cwd": "C:\\Users\\DELL\\Documents\\GitHub\\dashboard_financeira_integ\\desktop",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "dev-server-serves-home",
+        "resolvedExecutable": "C:\\nvm4w\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "dev"
+        ],
+        "cwd": "C:\\Users\\DELL\\Documents\\GitHub\\dashboard_financeira_integ\\desktop",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "tests-pass",
+        "resolvedExecutable": "C:\\nvm4w\\nodejs\\npm.CMD",
+        "args": [
+          "test"
+        ],
+        "cwd": "C:\\Users\\DELL\\Documents\\GitHub\\dashboard_financeira_integ\\desktop",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      }
+    ]
+  }
+}
