@@ -13,6 +13,7 @@ import Contas from "./pages/Contas";
 import Empresas from "./pages/Empresas";
 import EmpresaDetalhe from "./pages/EmpresaDetalhe";
 import Categorias from "./pages/Categorias";
+import Saldos from "./pages/Saldos";
 
 
 export default function App() {

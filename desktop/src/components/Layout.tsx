@@ -25,6 +25,7 @@ export function Layout() {
           <NavLink to="/lancamentos" className={linkCls}>Lançamentos</NavLink>
           <NavLink to="/empresas" className={linkCls}>Empresas</NavLink>
           <NavLink to="/contas" className={linkCls}>Contas</NavLink>
+          <NavLink to="/saldos" className={linkCls}>Saldos</NavLink>
           <NavLink to="/importar" className={linkCls}>Importar</NavLink>
           {user!.role === "admin" && (
             <>
