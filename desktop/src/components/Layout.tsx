@@ -26,7 +26,12 @@ export function Layout() {
           <NavLink to="/empresas" className={linkCls}>Empresas</NavLink>
           <NavLink to="/contas" className={linkCls}>Contas</NavLink>
           <NavLink to="/importar" className={linkCls}>Importar</NavLink>
-          {user!.role === "admin" && <NavLink to="/usuarios" className={linkCls}>Usuários</NavLink>}
+          {user!.role === "admin" && (
+            <>
+              <NavLink to="/categorias" className={linkCls}>Categorias</NavLink>
+              <NavLink to="/usuarios" className={linkCls}>Usuários</NavLink>
+            </>
+          )}
         </nav>
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-sm font-medium text-white">

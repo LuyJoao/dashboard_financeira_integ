@@ -11,6 +11,7 @@ import { btnCls } from "../components/ui";
 import { useFiltros } from "../hooks/useFiltros";
 import { formatBRL, formatData } from "../lib/format";
 import { CONTAS_FIXAS, hojeISO, validar } from "../lib/lancamentos";
+import { listarCategorias } from "../api/categorias";
 
 const semId = ({ id: _id, ...resto }: Lancamento): LancamentoEdicao => resto;
 const inconsistente = (l: Lancamento) => validar(semId(l)).length > 0;
@@ -67,9 +68,8 @@ export default function Lancamentos() {
   const soInconsistentes = f.get("inconsistentes") === "1";
 
   const todos = consulta.data ?? [];
-  // Provisório: contas e categorias saem dos próprios dados. Depois virão do cadastro (categorias são criadas pelo admin).
-  const contas = useMemo(() => Array.from(new Set(todos.map((l) => l.banco))).sort(), [todos]);
-  const categorias = useMemo(() => Array.from(new Set(todos.map((l) => l.categoria))).sort(), [todos]);
+  const categoriasQ = useQuery({ queryKey: ["categorias"], queryFn: listarCategorias });
+  const categorias = useMemo(() => (categoriasQ.data ?? []).map((c) => c.nome), [categoriasQ.data]);
   const qtdInconsistentes = useMemo(() => todos.filter(inconsistente).length, [todos]);
   const contasForm = CONTAS_FIXAS;
   const novoVazio = (): LancamentoEdicao => ({
@@ -181,7 +181,7 @@ export default function Lancamentos() {
       </div>
 
       <BarraFiltros mostrarLimpar={f.temFiltro} onLimpar={f.limpar}>
-        <FiltroSelect label="Conta" valor={banco} onChange={(v) => f.set("banco", v)} opcoes={contas} />
+        <FiltroSelect label="Conta" valor={banco} onChange={(v) => f.set("banco", v)} opcoes={contasForm} />
         <FiltroSelect label="Categoria" valor={categoria} onChange={(v) => f.set("categoria", v)} opcoes={categorias} />
         <FiltroSelect label="Tipo" valor={tipo} onChange={(v) => f.set("tipo", v)} opcoes={["Receita", "Despesa", "Investimento"]} />
         <FiltroData label="De" valor={de} onChange={(v) => f.set("de", v)} />

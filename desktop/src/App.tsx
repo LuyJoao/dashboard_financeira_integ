@@ -12,6 +12,8 @@ import Dashboard from "./pages/Dashboard";
 import Contas from "./pages/Contas";
 import Empresas from "./pages/Empresas";
 import EmpresaDetalhe from "./pages/EmpresaDetalhe";
+import Categorias from "./pages/Categorias";
+
 
 export default function App() {
   return (
@@ -32,6 +34,7 @@ export default function App() {
           <Route path="contas" element={<Contas />} />  
           <Route element={<ProtectedRoute admin />}>
             <Route path="usuarios" element={<Usuarios />} />
+            <Route path="categorias" element={<Categorias />} />
           </Route>
         </Route>
       </Route>
