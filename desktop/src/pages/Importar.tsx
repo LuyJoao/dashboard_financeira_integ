@@ -14,6 +14,7 @@ import {
 import { mensagemErro } from "../api/client";
 import type { LancamentoEdicao, Tipo } from "../api/lancamentos";
 import { Cartao } from "../components/Cartao";
+import { BotoesExportacao } from "../components/BotoesExportacao";
 import { DataTable } from "../components/DataTable";
 import { Carregando, ErroMsg } from "../components/estados";
 import { FormLancamento } from "../components/FormLancamento";
@@ -178,7 +179,10 @@ export default function Importar() {
   return (
     <div className="max-w-6xl space-y-8">
       <section className="space-y-4">
-        <h1 className="text-xl font-semibold">Importar planilha Excel</h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-xl font-semibold">Importar planilha Excel</h1>
+          <BotoesExportacao />
+        </div>
 
         {/* Etapa final: concluída */}
         {concluida && (

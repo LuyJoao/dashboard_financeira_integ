@@ -4,6 +4,7 @@ import { mensagemErro } from "../api/client";
 import type { SaldoContaMes } from "../api/dashboard";
 import { AplicadoMes, listarSaldos, salvarAplicado, salvarSaldo, SaldoEdicao } from "../api/saldos";
 import { Cartao } from "../components/Cartao";
+import { BotoesExportacao } from "../components/BotoesExportacao";
 import { Carregando, ErroMsg } from "../components/estados";
 import { BarraFiltros, FiltroSelect } from "../components/Filtros";
 import { btnCls } from "../components/ui";
@@ -130,7 +131,10 @@ export default function Saldos() {
 
   return (
     <div className="max-w-6xl space-y-4">
-      <h1 className="text-xl font-semibold">Saldos mensais</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-xl font-semibold">Saldos mensais</h1>
+        <BotoesExportacao />
+      </div>
       <p className="text-sm text-slate-500">
         O saldo do extrato é o que o banco mostra no fim do mês. Na importação ele já vem lido do extrato; aqui você confere, corrige ou informa o de um mês
         lançado à mão. Deixe em branco se ainda não conferiu: o sistema usa o saldo calculado dos lançamentos.

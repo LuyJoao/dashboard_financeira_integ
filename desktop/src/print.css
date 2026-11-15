@@ -1,0 +1,39 @@
+@page {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body {
+    background: #fff !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  /* botões e janelas não saem no papel */
+  main button,
+  main select,
+  .fixed {
+    display: none !important;
+  }
+  /* tabelas largas não ficam cortadas */
+  .overflow-x-auto,
+  .overflow-hidden {
+    overflow: visible !important;
+  }
+  thead {
+    display: table-header-group; /* repete o cabeçalho em cada página */
+  }
+  tr,
+  section {
+    break-inside: avoid;
+  }
+  h1,
+  h2 {
+    break-after: avoid;
+  }
+}

@@ -7,6 +7,7 @@ import { criarEmpresa, listarEmpresas } from "../api/empresas";
 import { listarTitulos } from "../api/titulos";
 import { useAuth } from "../auth/AuthContext";
 import { Cartao } from "../components/Cartao";
+import { BotoesExportacao } from "../components/BotoesExportacao";
 import { DataTable } from "../components/DataTable";
 import { BarraFiltros, FiltroSelect, FiltroTexto } from "../components/Filtros";
 import { FormEmpresa } from "../components/FormEmpresa";
@@ -115,19 +116,22 @@ export default function Empresas() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">Empresas</h1>
-        {ehAdmin && (
-          <button
-            className={btnCls}
-            onClick={() => {
-              cadastrar.reset();
-              setNovaEmpresa(true);
-            }}
-          >
-            + Nova empresa
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <BotoesExportacao />
+          {ehAdmin && (
+            <button
+              className={btnCls}
+              onClick={() => {
+                cadastrar.reset();
+                setNovaEmpresa(true);
+              }}
+            >
+              + Nova empresa
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

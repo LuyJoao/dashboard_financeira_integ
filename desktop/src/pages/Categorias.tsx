@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { mensagemErro } from "../api/client";
 import { atualizarCategoria, Categoria, criarCategoria, excluirCategoria, listarCategorias } from "../api/categorias";
 import { DataTable } from "../components/DataTable";
+import { BotoesExportacao } from "../components/BotoesExportacao";
 import { BarraFiltros, FiltroTexto } from "../components/Filtros";
 import { Modal } from "../components/Modal";
 import { btnCls, inputCls } from "../components/ui";
@@ -129,11 +130,14 @@ export default function Categorias() {
 
   return (
     <div className="max-w-3xl space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">Categorias</h1>
-        <button className={btnCls} onClick={() => { criar.reset(); setCriando(true); }}>
-          + Nova categoria
-        </button>
+        <div className="flex items-center gap-2">
+          <BotoesExportacao />
+          <button className={btnCls} onClick={() => { criar.reset(); setCriando(true); }}>
+            + Nova categoria
+          </button>
+        </div>
       </div>
       <p className="text-sm text-slate-500">
         Só o administrador cria e altera categorias. "Aplicação Financeira" é do sistema: é ela que separa aplicações, resgates e rendimentos nos cálculos.

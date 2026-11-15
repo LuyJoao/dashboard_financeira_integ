@@ -5,6 +5,7 @@ import { Link, useParams } from "react-router-dom";
 import { listarEmpresas } from "../api/empresas";
 import { listarTitulos, Titulo } from "../api/titulos";
 import { Cartao } from "../components/Cartao";
+import { BotoesExportacao } from "../components/BotoesExportacao";
 import { DataTable } from "../components/DataTable";
 import { Carregando, ErroMsg, Vazio } from "../components/estados";
 import { SeloStatus } from "../components/SeloStatus";
@@ -74,9 +75,12 @@ export default function EmpresaDetalhe() {
             {ROTULO_TIPO_EMPRESA[empresa.tipo]} · CNPJ: {empresa.cnpj ?? "não informado"}
           </p>
         </div>
-        <Link to={`/contas?empresa=${encodeURIComponent(empresa.nome)}`} className={btnCls}>
-          Gerenciar na tela de Contas
-        </Link>
+        <div className="flex items-center gap-2">
+          <BotoesExportacao />
+          <Link to={`/contas?empresa=${encodeURIComponent(empresa.nome)}`} className={btnCls}>
+            Gerenciar na tela de Contas
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

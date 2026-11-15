@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { atualizarLancamento, criarLancamento, excluirLancamento, Lancamento, LancamentoEdicao, listarLancamentos } from "../api/lancamentos";
 import { mensagemErro } from "../api/client";
 import { DataTable } from "../components/DataTable";
+import { BotoesExportacao } from "../components/BotoesExportacao";
 import { BarraFiltros, FiltroData, FiltroSelect, FiltroTexto } from "../components/Filtros";
 import { FormLancamento } from "../components/FormLancamento";
 import { Modal } from "../components/Modal";
@@ -167,17 +168,20 @@ export default function Lancamentos() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">Lançamentos</h1>
-        <button
-          className={btnCls}
-          onClick={() => {
-            criar.reset();
-            setCriando(true);
-          }}
-        >
-          + Novo lançamento
-        </button>
+        <div className="flex items-center gap-2">
+          <BotoesExportacao />
+          <button
+            className={btnCls}
+            onClick={() => {
+              criar.reset();
+              setCriando(true);
+            }}
+          >
+            + Novo lançamento
+          </button>
+        </div>
       </div>
 
       <BarraFiltros mostrarLimpar={f.temFiltro} onLimpar={f.limpar}>

@@ -34,6 +34,7 @@ export default function App() {
           <Route path="lancamentos" element={<Lancamentos />} />
           <Route path="contas" element={<Contas />} />  
           <Route element={<ProtectedRoute admin />}>
+            <Route path="saldos" element={<Saldos />} />
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="categorias" element={<Categorias />} />
           </Route>

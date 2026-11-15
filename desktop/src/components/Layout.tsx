@@ -1,6 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import { BotoesExportacao } from "./BotoesExportacao";
 import { CabecalhoImpressao } from "./CabecalhoImpressao";
 
 const linkCls = ({ isActive }: { isActive: boolean }) =>
@@ -27,17 +26,16 @@ export function Layout() {
           <NavLink to="/lancamentos" className={linkCls}>Lançamentos</NavLink>
           <NavLink to="/empresas" className={linkCls}>Empresas</NavLink>
           <NavLink to="/contas" className={linkCls}>Contas</NavLink>
-          <NavLink to="/saldos" className={linkCls}>Saldos</NavLink>
           <NavLink to="/importar" className={linkCls}>Importar</NavLink>
           {user!.role === "admin" && (
             <>
+              <NavLink to="/saldos" className={linkCls}>Saldos</NavLink>
               <NavLink to="/categorias" className={linkCls}>Categorias</NavLink>
               <NavLink to="/usuarios" className={linkCls}>Usuários</NavLink>
             </>
           )}
         </nav>
         <div className="flex items-center gap-3">
-          <BotoesExportacao />
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-sm font-medium text-white">
             {iniciais}
           </div>

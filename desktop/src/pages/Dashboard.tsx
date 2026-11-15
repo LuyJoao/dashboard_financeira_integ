@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { buscarDashboard } from "../api/dashboard";
 import { Cartao } from "../components/Cartao";
+import { BotoesExportacao } from "../components/BotoesExportacao";
 import { GraficoCategorias } from "../components/dashboard/GraficoCategorias";
 import { GraficoMeses } from "../components/dashboard/GraficoMeses";
 import { GraficoSaldo } from "../components/dashboard/GraficoSaldo";
@@ -38,11 +39,16 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-xl font-semibold">Dashboard Financeiro — {v.mes}</h1>
-        <p className="text-sm text-slate-500">
-          {d.instituicao} · Contas: {d.contas.join(" · ")}
-        </p>
-        <p className="text-xs text-slate-400">Dados atualizados em {formatDataHora(d.atualizado_em)}</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-semibold">Dashboard Financeiro — {v.mes}</h1>
+            <p className="text-sm text-slate-500">
+              {d.instituicao} · Contas: {d.contas.join(" · ")}
+            </p>
+            <p className="text-xs text-slate-400">Dados atualizados em {formatDataHora(d.atualizado_em)}</p>
+          </div>
+          <BotoesExportacao />
+        </div>
       </header>
 
       <ResumoTitulos />

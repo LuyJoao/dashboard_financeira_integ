@@ -6,6 +6,7 @@ import { criarEmpresa, listarEmpresas } from "../api/empresas";
 import { atualizarTitulo, criarTitulo, excluirTitulo, listarTitulos, Titulo, TituloEdicao } from "../api/titulos";
 import { useAuth } from "../auth/AuthContext";
 import { Cartao } from "../components/Cartao";
+import { BotoesExportacao } from "../components/BotoesExportacao";
 import { DataTable } from "../components/DataTable";
 import { BarraFiltros, FiltroData, FiltroSelect, FiltroTexto } from "../components/Filtros";
 import { FormEmpresa } from "../components/FormEmpresa";
@@ -192,7 +193,8 @@ export default function Contas() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Contas a pagar e a receber</h1>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-2">
+          <BotoesExportacao />
           {ehAdmin && (
             <button className={btnCls} onClick={() => { cadastrarEmpresa.reset(); setNovaEmpresa(true); }}>
               + Nova empresa

@@ -5,6 +5,7 @@ import { mensagemErro } from "../api/client";
 import { atualizarUsuario, criarUsuario, listarUsuarios, Perfil, redefinirSenhaUsuario, Usuario, UsuarioNovo } from "../api/usuarios";
 import { useAuth } from "../auth/AuthContext";
 import { DataTable } from "../components/DataTable";
+import { BotoesExportacao } from "../components/BotoesExportacao";
 import { Modal } from "../components/Modal";
 import { btnCls, inputCls } from "../components/ui";
 
@@ -157,7 +158,10 @@ export default function Usuarios() {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <h1 className="text-xl font-semibold">Usuários</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-xl font-semibold">Usuários</h1>
+        <BotoesExportacao />
+      </div>
 
       <form onSubmit={enviarNovo} className="grid grid-cols-2 gap-3 rounded-xl border bg-white p-4">
         <input className={inputCls} placeholder="Nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
