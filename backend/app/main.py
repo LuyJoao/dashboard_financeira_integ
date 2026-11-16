@@ -1,7 +1,9 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from . import models  # noqa: F401  (registra as tabelas)
 from .api import auth, usuarios
@@ -24,6 +26,10 @@ app.add_middleware(
 )
 app.include_router(auth.router)
 app.include_router(usuarios.router)
+
+diretorio_atualizacoes = Path(__file__).resolve().parent.parent / "atualizacoes"
+diretorio_atualizacoes.mkdir(parents=True, exist_ok=True)
+app.mount("/atualizacoes", StaticFiles(directory=diretorio_atualizacoes), name="atualizacoes")
 
 
 @app.get("/api/health")
