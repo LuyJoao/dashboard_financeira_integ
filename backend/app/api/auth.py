@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from ..core import security as sec
@@ -9,7 +9,7 @@ from ..core.config import settings
 from ..db import get_db
 from ..deps import usuario_atual
 from ..models import ResetSenha, Usuario
-from ..schemas import EsqueciSenhaIn, LoginIn, RedefinirSenhaIn, TokenOut, UsuarioOut
+from ..schemas import EsqueciSenhaIn, LoginIn, RedefinirSenhaIn, TokenOut, TrocarSenhaIn, UsuarioOut
 from ..services.email import enviar_reset
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -28,15 +28,34 @@ def me(user: Usuario = Depends(usuario_atual)):
     return user
 
 
+@router.post("/trocar-senha")
+def trocar_senha(dados: TrocarSenhaIn, db: Session = Depends(get_db), user: Usuario = Depends(usuario_atual)):
+    """Cada usuário troca a própria senha informando a atual. (400, e não 401, para o front não tratar como sessão expirada.)"""
+    if not sec.verificar_senha(dados.senha_atual, user.senha_hash):
+        raise HTTPException(400, "Senha atual incorreta")
+    if dados.nova_senha == dados.senha_atual:
+        raise HTTPException(400, "A nova senha deve ser diferente da atual")
+    user.senha_hash = sec.hash_senha(dados.nova_senha)
+    db.commit()
+    return {"mensagem": "Senha atualizada."}
+
+
 @router.post("/esqueci-senha")
-def esqueci_senha(dados: EsqueciSenhaIn, db: Session = Depends(get_db)):
+def esqueci_senha(dados: EsqueciSenhaIn, segundo_plano: BackgroundTasks, db: Session = Depends(get_db)):
     user = db.scalar(select(Usuario).where(Usuario.email == dados.email.lower()))
     if user and user.ativo:
-        codigo, hash_ = sec.novo_token_reset()
-        expira = datetime.now(timezone.utc) + timedelta(minutes=settings.reset_token_minutes)
-        db.add(ResetSenha(usuario_id=user.id, token_hash=hash_, expira_em=expira))
-        db.commit()
-        enviar_reset(user.email, codigo)
+        agora = datetime.now(timezone.utc)
+        ultimo = db.scalar(select(func.max(ResetSenha.criado_em)).where(ResetSenha.usuario_id == user.id))
+        # Limite de pedidos: impede usar a API para lotar a caixa de e-mail de alguém.
+        if not ultimo or (agora - ultimo).total_seconds() >= settings.reset_intervalo_segundos:
+            # Um código novo invalida os anteriores que ainda não foram usados.
+            db.execute(update(ResetSenha).where(ResetSenha.usuario_id == user.id, ResetSenha.usado_em.is_(None)).values(usado_em=agora))
+            codigo, hash_ = sec.novo_token_reset()
+            expira = agora + timedelta(minutes=settings.reset_token_minutes)
+            db.add(ResetSenha(usuario_id=user.id, token_hash=hash_, expira_em=expira))
+            db.commit()
+            # Em segundo plano: a resposta não espera o SMTP (nem demora diferente quando o e-mail não existe).
+            segundo_plano.add_task(enviar_reset, user.email, codigo)
     # resposta igual exista o e-mail ou não (não revela quais contas existem)
     return {"mensagem": "Se o e-mail estiver cadastrado, você receberá um código."}
 

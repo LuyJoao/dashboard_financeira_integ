@@ -3,6 +3,9 @@ dist/
 release/
 .venv/
 __pycache__/
-.env
 *.pyc
-*.db
+.pytest_cache/
+.env
+node_modules/
+dist/
+release/

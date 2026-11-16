@@ -1,21 +1,14 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import models  # noqa: F401  (registra as tabelas)
-from .api import auth, usuarios
+from .api import auth, dashboard, empresas, importacoes, lancamentos, usuarios
 from .core.config import settings
-from .db import Base, engine
 
+# As tabelas agora são criadas/alteradas via Alembic (ver backend/alembic/),
+# não mais por Base.metadata.create_all(). Rode "alembic upgrade head" antes
+# de subir a API (o README e o seed.py também dependem disso).
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    Base.metadata.create_all(engine)  # desenvolvimento; trocar por Alembic
-    yield
-
-
-app = FastAPI(title="Pagamentos API", lifespan=lifespan)
+app = FastAPI(title="Pagamentos API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -24,6 +17,10 @@ app.add_middleware(
 )
 app.include_router(auth.router)
 app.include_router(usuarios.router)
+app.include_router(importacoes.router)
+app.include_router(lancamentos.router)
+app.include_router(empresas.router)
+app.include_router(dashboard.router)
 
 
 @app.get("/api/health")
