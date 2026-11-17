@@ -1,15 +1,13 @@
-"""Cria o primeiro administrador: python -m app.seed EMAIL "NOME" SENHA"""
+"""para criar o primeiro administrador: python -m app.seed EMAIL "NOME" SENHA"""
 import sys
 
 from sqlalchemy import select
 
 from . import models
 from .core.security import hash_senha
-from .db import Base, SessionLocal, engine
-
+from .db import SessionLocal
 
 def main(email: str, nome: str, senha: str) -> None:
-    Base.metadata.create_all(engine)
     with SessionLocal() as db:
         if db.scalar(select(models.Usuario).where(models.Usuario.email == email.lower())):
             print("Esse e-mail já existe.")

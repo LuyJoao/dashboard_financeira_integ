@@ -3,7 +3,6 @@ dist/
 release/
 .venv/
 __pycache__/
-.env
 *.pyc
 *.db
 backend/atualizacoes/
