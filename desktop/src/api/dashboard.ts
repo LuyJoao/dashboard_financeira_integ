@@ -1,4 +1,5 @@
 import { api } from "./client";
+import { USAR_MOCK } from "../lib/mock";
 import { buscarDashboardMock } from "./dashboardMock";
 
 // ---------- Contrato com o back-end ----------
@@ -44,9 +45,6 @@ export type DadosDashboard = {
   saldos: SaldoContaMes[];
   aplicado: SaldoAplicadoMes[];
 };
-
-// Enquanto o back-end não existe, usa dados de exemplo. Para usar a API de verdade: VITE_USE_MOCK=false no desktop/.env
-const USAR_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 
 export async function buscarDashboard(): Promise<DadosDashboard> {
   if (USAR_MOCK) return buscarDashboardMock();

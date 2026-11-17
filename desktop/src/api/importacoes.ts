@@ -1,4 +1,5 @@
 import { api } from "./client";
+import { USAR_MOCK } from "../lib/mock";
 import type { LancamentoEdicao } from "./lancamentos";
 import { confirmarMock, listarMock, previaMock } from "./importacoesMock";
 
@@ -93,9 +94,6 @@ export type Importacao = {
   linhas_erro: number;
   status: "concluida" | "concluida_com_erros";
 };
-
-// Enquanto o back-end não existe, usa dados falsos. Para usar a API de verdade: VITE_USE_MOCK=false no desktop/.env
-const USAR_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 
 export async function enviarPrevia(arquivo: File): Promise<Previa> {
   if (USAR_MOCK) return previaMock(arquivo);

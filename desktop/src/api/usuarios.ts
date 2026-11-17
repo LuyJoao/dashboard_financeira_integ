@@ -1,4 +1,5 @@
 import { api } from "./client";
+import { USAR_MOCK } from "../lib/mock";
 import { atualizarUsuarioMock, criarUsuarioMock, listarUsuariosMock, redefinirSenhaMock } from "../mock/usuarios";
 
 // ---------- Contrato com o back-end (tudo SOMENTE ADMIN) ----------
@@ -13,8 +14,6 @@ export type Perfil = "admin" | "user";
 export type Usuario = { id: number; nome: string; email: string; role: Perfil; ativo: boolean };
 export type UsuarioNovo = { nome: string; email: string; senha: string; role: Perfil };
 export type UsuarioEdicao = { nome?: string; role?: Perfil; ativo?: boolean };
-
-const USAR_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 
 export async function listarUsuarios(): Promise<Usuario[]> {
   if (USAR_MOCK) return listarUsuariosMock();

@@ -1,4 +1,5 @@
 import { api } from "./client";
+import { USAR_MOCK } from "../lib/mock";
 import { atualizarCategoriaMock, criarCategoriaMock, excluirCategoriaMock, listarCategoriasMock } from "../mock/categorias";
 
 // ---------- Contrato com o back-end ----------
@@ -15,8 +16,6 @@ export type Categoria = {
   sistema: boolean; // não pode ser renomeada nem excluída
   em_uso: number; // quantidade de lançamentos que usam a categoria
 };
-
-const USAR_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 
 export async function listarCategorias(): Promise<Categoria[]> {
   if (USAR_MOCK) return listarCategoriasMock();

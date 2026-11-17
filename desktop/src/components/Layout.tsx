@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { CabecalhoImpressao } from "./CabecalhoImpressao";
+import { AvisoDemonstracao } from "./AvisoDemonstracao";
+
 
 const linkCls = ({ isActive }: { isActive: boolean }) =>
   `rounded-md px-3 py-2 text-sm font-medium ${
@@ -19,6 +21,7 @@ export function Layout() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
+      <AvisoDemonstracao />
       <header className="flex items-center justify-between border-b bg-white px-6 py-3 print:hidden">
         <nav className="flex items-center gap-1">
           <span className="mr-4 font-semibold">INTEG</span>

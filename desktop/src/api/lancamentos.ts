@@ -1,4 +1,5 @@
 import { api } from "./client";
+import { USAR_MOCK } from "../lib/mock";
 import { atualizarMock, criarMock, excluirMock, listarMock } from "../mock/lancamentos";
 
 // ---------- Contrato com o back-end ----------
@@ -23,8 +24,6 @@ export type Lancamento = {
 };
 
 export type LancamentoEdicao = Omit<Lancamento, "id">;
-
-const USAR_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 
 export async function listarLancamentos(simular = ""): Promise<Lancamento[]> {
   if (USAR_MOCK) return listarMock(simular);

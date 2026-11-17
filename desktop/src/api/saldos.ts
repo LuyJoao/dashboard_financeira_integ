@@ -1,4 +1,5 @@
 import { api } from "./client";
+import { USAR_MOCK } from "../lib/mock";
 import { listarSaldosMock, salvarAplicadoMock, salvarSaldoMock } from "../mock/saldos";
 import type { SaldoAplicadoMes, SaldoContaMes } from "./dashboard";
 
@@ -23,8 +24,6 @@ export type DadosSaldos = {
 };
 
 export type SaldoEdicao = { saldo_inicial: number; saldo_extrato: number | null };
-
-const USAR_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 
 export async function listarSaldos(): Promise<DadosSaldos> {
   if (USAR_MOCK) return listarSaldosMock();

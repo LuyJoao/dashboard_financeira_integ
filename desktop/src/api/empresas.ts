@@ -1,4 +1,5 @@
 import { api } from "./client";
+import { USAR_MOCK } from "../lib/mock";
 import { criarEmpresaMock, listarEmpresasMock } from "../mock/empresas";
 
 // ---------- Contrato com o back-end ----------
@@ -9,8 +10,6 @@ import { criarEmpresaMock, listarEmpresasMock } from "../mock/empresas";
 export type TipoEmpresa = "incubada" | "fornecedor";
 export type Empresa = { id: number; nome: string; tipo: TipoEmpresa; cnpj: string | null };
 export type EmpresaNova = Omit<Empresa, "id">;
-
-const USAR_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
 
 export async function listarEmpresas(): Promise<Empresa[]> {
   if (USAR_MOCK) return listarEmpresasMock();
