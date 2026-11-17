@@ -11,7 +11,7 @@ export function BarraFiltros({
   onLimpar?: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-xl border bg-white p-4">
+    <div className="flex flex-wrap items-end gap-3 rounded-xl border bg-white p-4 print:hidden">
       {children}
       {mostrarLimpar && (
         <button onClick={onLimpar} className="pb-2 text-sm text-slate-500 hover:text-slate-900">

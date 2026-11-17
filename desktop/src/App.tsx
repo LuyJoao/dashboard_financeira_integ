@@ -9,6 +9,12 @@ import Usuarios from "./pages/Usuarios";
 import Lancamentos from "./pages/Lancamentos";
 import Importar from "./pages/Importar";
 import Dashboard from "./pages/Dashboard";
+import Contas from "./pages/Contas";
+import Empresas from "./pages/Empresas";
+import EmpresaDetalhe from "./pages/EmpresaDetalhe";
+import Categorias from "./pages/Categorias";
+import Saldos from "./pages/Saldos";
+
 
 export default function App() {
   return (
@@ -22,11 +28,15 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route index element={<Dashboard />} />
-          <Route path="empresas" element={<Placeholder titulo="Empresas e pagamentos" />} />
+          <Route path="empresas" element={<Empresas />} />
+          <Route path="empresas/:id" element={<EmpresaDetalhe />} />
           <Route path="importar" element={<Importar />} />
           <Route path="lancamentos" element={<Lancamentos />} />
+          <Route path="contas" element={<Contas />} />  
           <Route element={<ProtectedRoute admin />}>
+            <Route path="saldos" element={<Saldos />} />
             <Route path="usuarios" element={<Usuarios />} />
+            <Route path="categorias" element={<Categorias />} />
           </Route>
         </Route>
       </Route>

@@ -1,4 +1,5 @@
 // Gerado a partir da planilha Dashboard_Financeiro_ONG_2026.xlsx (valores em centavos).
+// O saldo aplicado é de EXEMPLO (aplicado menos resgatado); no sistema ele será informado pelo usuário.
 import type { DadosDashboard } from "../api/dashboard";
 
 export const DADOS_DASHBOARD: DadosDashboard = {
@@ -9,115 +10,621 @@ export const DADOS_DASHBOARD: DadosDashboard = {
   "136 - Unicred",
   "341 - Itaú"
  ],
+ "categorias": [
+  "Ajustes de Conta",
+  "Análises de Águas",
+  "Aplicação Financeira",
+  "Convênio/Bolsas Palmital",
+  "Despesas de Copa",
+  "Fornecedores/Outros",
+  "Insumos Laboratório",
+  "Internet/Telecom",
+  "Manutenção/Reforma",
+  "Serviços Contábeis",
+  "Tarifas Bancárias",
+  "Taxa de Incubação",
+  "Vendas Bazar"
+ ],
  "meses": [
+  "Jan/26",
+  "Fev/26",
+  "Mar/26",
+  "Abr/26",
+  "Mai/26",
+  "Jun/26"
+ ],
+ "resumo": [
   {
    "mes": "Jan/26",
-   "receitas": 5193110,
-   "despesas": -478449,
-   "aplicacoes": -21500000,
-   "resgates": 300002
-  },
-  {
-   "mes": "Fev/26",
-   "receitas": 30820,
-   "despesas": -423396,
-   "aplicacoes": 0,
-   "resgates": 0
-  },
-  {
-   "mes": "Mar/26",
-   "receitas": 14110541,
-   "despesas": -770409,
-   "aplicacoes": 0,
-   "resgates": 0
-  },
-  {
-   "mes": "Abr/26",
-   "receitas": 23008256,
-   "despesas": -1969756,
-   "aplicacoes": -30000000,
-   "resgates": 0
-  },
-  {
-   "mes": "Mai/26",
-   "receitas": 6795383,
-   "despesas": -10080409,
-   "aplicacoes": 0,
-   "resgates": 0
-  },
-  {
-   "mes": "Jun/26",
-   "receitas": 3234748,
-   "despesas": -5604714,
-   "aplicacoes": 0,
-   "resgates": 2000001
-  }
- ],
- "categorias": [
-  {
-   "categoria": "Ajustes de Conta",
-   "receitas": 0,
-   "despesas": -100
-  },
-  {
-   "categoria": "Análises de Águas",
-   "receitas": 711000,
-   "despesas": 0
-  },
-  {
-   "categoria": "Convênio/Bolsas Palmital",
-   "receitas": 4320000,
-   "despesas": -3600000
-  },
-  {
+   "conta": "104 - Caixa",
    "categoria": "Despesas de Copa",
+   "movimento": null,
    "receitas": 0,
-   "despesas": -296940
+   "despesas": -41248
   },
   {
+   "mes": "Jan/26",
+   "conta": "104 - Caixa",
    "categoria": "Fornecedores/Outros",
-   "receitas": 101,
-   "despesas": -13827217
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -1265
   },
   {
+   "mes": "Jan/26",
+   "conta": "104 - Caixa",
    "categoria": "Insumos Laboratório",
+   "movimento": null,
    "receitas": 0,
    "despesas": -95000
   },
   {
+   "mes": "Jan/26",
+   "conta": "104 - Caixa",
    "categoria": "Internet/Telecom",
+   "movimento": null,
    "receitas": 0,
-   "despesas": -147958
+   "despesas": -43008
   },
   {
-   "categoria": "Manutenção/Reforma",
-   "receitas": 0,
-   "despesas": -760762
-  },
-  {
-   "categoria": "Rendimentos de Aplicações",
-   "receitas": 37315,
-   "despesas": 0
-  },
-  {
+   "mes": "Jan/26",
+   "conta": "104 - Caixa",
    "categoria": "Serviços Contábeis",
+   "movimento": null,
    "receitas": 0,
-   "despesas": -210000
+   "despesas": -120000
   },
   {
+   "mes": "Jan/26",
+   "conta": "104 - Caixa",
    "categoria": "Tarifas Bancárias",
+   "movimento": null,
    "receitas": 0,
-   "despesas": -204656
+   "despesas": -9228
   },
   {
+   "mes": "Jan/26",
+   "conta": "104 - Caixa",
    "categoria": "Taxa de Incubação",
-   "receitas": 268600,
+   "movimento": null,
+   "receitas": 50000,
    "despesas": 0
   },
   {
+   "mes": "Jan/26",
+   "conta": "136 - Unicred",
+   "categoria": "Aplicação Financeira",
+   "movimento": "aplicacao",
+   "receitas": 0,
+   "despesas": -21500000
+  },
+  {
+   "mes": "Jan/26",
+   "conta": "136 - Unicred",
+   "categoria": "Aplicação Financeira",
+   "movimento": "resgate",
+   "receitas": 300002,
+   "despesas": 0
+  },
+  {
+   "mes": "Jan/26",
+   "conta": "136 - Unicred",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -152800
+  },
+  {
+   "mes": "Jan/26",
+   "conta": "136 - Unicred",
    "categoria": "Vendas Bazar",
-   "receitas": 47035842,
-   "despesas": -184500
+   "movimento": null,
+   "receitas": 5137396,
+   "despesas": 0
+  },
+  {
+   "mes": "Jan/26",
+   "conta": "341 - Itaú",
+   "categoria": "Aplicação Financeira",
+   "movimento": "rendimento",
+   "receitas": 5714,
+   "despesas": 0
+  },
+  {
+   "mes": "Jan/26",
+   "conta": "341 - Itaú",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -15900
+  },
+  {
+   "mes": "Fev/26",
+   "conta": "104 - Caixa",
+   "categoria": "Despesas de Copa",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -16550
+  },
+  {
+   "mes": "Fev/26",
+   "conta": "104 - Caixa",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -61390
+  },
+  {
+   "mes": "Fev/26",
+   "conta": "104 - Caixa",
+   "categoria": "Internet/Telecom",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -20990
+  },
+  {
+   "mes": "Fev/26",
+   "conta": "104 - Caixa",
+   "categoria": "Manutenção/Reforma",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -216796
+  },
+  {
+   "mes": "Fev/26",
+   "conta": "104 - Caixa",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -9520
+  },
+  {
+   "mes": "Fev/26",
+   "conta": "104 - Caixa",
+   "categoria": "Taxa de Incubação",
+   "movimento": null,
+   "receitas": 25000,
+   "despesas": 0
+  },
+  {
+   "mes": "Fev/26",
+   "conta": "136 - Unicred",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -82150
+  },
+  {
+   "mes": "Fev/26",
+   "conta": "341 - Itaú",
+   "categoria": "Ajustes de Conta",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -100
+  },
+  {
+   "mes": "Fev/26",
+   "conta": "341 - Itaú",
+   "categoria": "Aplicação Financeira",
+   "movimento": "rendimento",
+   "receitas": 5820,
+   "despesas": 0
+  },
+  {
+   "mes": "Fev/26",
+   "conta": "341 - Itaú",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -15900
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "104 - Caixa",
+   "categoria": "Análises de Águas",
+   "movimento": null,
+   "receitas": 485000,
+   "despesas": 0
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "104 - Caixa",
+   "categoria": "Despesas de Copa",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -35350
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "104 - Caixa",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -34000
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "104 - Caixa",
+   "categoria": "Internet/Telecom",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -20990
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "104 - Caixa",
+   "categoria": "Manutenção/Reforma",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -167000
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "104 - Caixa",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -13119
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "104 - Caixa",
+   "categoria": "Taxa de Incubação",
+   "movimento": null,
+   "receitas": 65000,
+   "despesas": 0
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "104 - Caixa",
+   "categoria": "Vendas Bazar",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -168000
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "136 - Unicred",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 101,
+   "despesas": -315050
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "136 - Unicred",
+   "categoria": "Vendas Bazar",
+   "movimento": null,
+   "receitas": 13554158,
+   "despesas": 0
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "341 - Itaú",
+   "categoria": "Aplicação Financeira",
+   "movimento": "rendimento",
+   "receitas": 6282,
+   "despesas": 0
+  },
+  {
+   "mes": "Mar/26",
+   "conta": "341 - Itaú",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -16900
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "104 - Caixa",
+   "categoria": "Convênio/Bolsas Palmital",
+   "movimento": null,
+   "receitas": 1440000,
+   "despesas": -1200000
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "104 - Caixa",
+   "categoria": "Despesas de Copa",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -82694
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "104 - Caixa",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -174561
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "104 - Caixa",
+   "categoria": "Internet/Telecom",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -20990
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "104 - Caixa",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -12848
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "104 - Caixa",
+   "categoria": "Taxa de Incubação",
+   "movimento": null,
+   "receitas": 65000,
+   "despesas": 0
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "104 - Caixa",
+   "categoria": "Vendas Bazar",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -16500
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "136 - Unicred",
+   "categoria": "Aplicação Financeira",
+   "movimento": "aplicacao",
+   "receitas": 0,
+   "despesas": -30000000
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "136 - Unicred",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -445263
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "136 - Unicred",
+   "categoria": "Vendas Bazar",
+   "movimento": null,
+   "receitas": 21496858,
+   "despesas": 0
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "341 - Itaú",
+   "categoria": "Aplicação Financeira",
+   "movimento": "rendimento",
+   "receitas": 6398,
+   "despesas": 0
+  },
+  {
+   "mes": "Abr/26",
+   "conta": "341 - Itaú",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -16900
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "104 - Caixa",
+   "categoria": "Análises de Águas",
+   "movimento": null,
+   "receitas": 165000,
+   "despesas": 0
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "104 - Caixa",
+   "categoria": "Convênio/Bolsas Palmital",
+   "movimento": null,
+   "receitas": 1440000,
+   "despesas": -1200000
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "104 - Caixa",
+   "categoria": "Despesas de Copa",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -45215
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "104 - Caixa",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -119200
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "104 - Caixa",
+   "categoria": "Internet/Telecom",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -20990
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "104 - Caixa",
+   "categoria": "Manutenção/Reforma",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -7907
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "104 - Caixa",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -13788
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "104 - Caixa",
+   "categoria": "Taxa de Incubação",
+   "movimento": null,
+   "receitas": 15000,
+   "despesas": 0
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "136 - Unicred",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -8508350
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "136 - Unicred",
+   "categoria": "Manutenção/Reforma",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -148059
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "136 - Unicred",
+   "categoria": "Vendas Bazar",
+   "movimento": null,
+   "receitas": 5168883,
+   "despesas": 0
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "341 - Itaú",
+   "categoria": "Aplicação Financeira",
+   "movimento": "rendimento",
+   "receitas": 6500,
+   "despesas": 0
+  },
+  {
+   "mes": "Mai/26",
+   "conta": "341 - Itaú",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -16900
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "104 - Caixa",
+   "categoria": "Análises de Águas",
+   "movimento": null,
+   "receitas": 61000,
+   "despesas": 0
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "104 - Caixa",
+   "categoria": "Convênio/Bolsas Palmital",
+   "movimento": null,
+   "receitas": 1440000,
+   "despesas": -1200000
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "104 - Caixa",
+   "categoria": "Despesas de Copa",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -75883
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "104 - Caixa",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -183188
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "104 - Caixa",
+   "categoria": "Internet/Telecom",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -20990
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "104 - Caixa",
+   "categoria": "Serviços Contábeis",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -90000
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "104 - Caixa",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -46753
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "104 - Caixa",
+   "categoria": "Taxa de Incubação",
+   "movimento": null,
+   "receitas": 48600,
+   "despesas": 0
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "136 - Unicred",
+   "categoria": "Aplicação Financeira",
+   "movimento": "resgate",
+   "receitas": 2000001,
+   "despesas": 0
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "136 - Unicred",
+   "categoria": "Fornecedores/Outros",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -3750000
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "136 - Unicred",
+   "categoria": "Manutenção/Reforma",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -221000
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "136 - Unicred",
+   "categoria": "Vendas Bazar",
+   "movimento": null,
+   "receitas": 1678547,
+   "despesas": 0
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "341 - Itaú",
+   "categoria": "Aplicação Financeira",
+   "movimento": "rendimento",
+   "receitas": 6601,
+   "despesas": 0
+  },
+  {
+   "mes": "Jun/26",
+   "conta": "341 - Itaú",
+   "categoria": "Tarifas Bancárias",
+   "movimento": null,
+   "receitas": 0,
+   "despesas": -16900
   }
  ],
  "saldos": [
@@ -318,6 +825,38 @@ export const DADOS_DASHBOARD: DadosDashboard = {
    "saldo_informado": 26260,
    "diferenca": 0,
    "status": "OK"
+  }
+ ],
+ "aplicado": [
+  {
+   "mes": "Jan/26",
+   "saldo_inicial": 0,
+   "saldo_final": 21199998
+  },
+  {
+   "mes": "Fev/26",
+   "saldo_inicial": 21199998,
+   "saldo_final": 21199998
+  },
+  {
+   "mes": "Mar/26",
+   "saldo_inicial": 21199998,
+   "saldo_final": 21199998
+  },
+  {
+   "mes": "Abr/26",
+   "saldo_inicial": 21199998,
+   "saldo_final": 51199998
+  },
+  {
+   "mes": "Mai/26",
+   "saldo_inicial": 51199998,
+   "saldo_final": 51199998
+  },
+  {
+   "mes": "Jun/26",
+   "saldo_inicial": 51199998,
+   "saldo_final": 49199997
   }
  ]
 };

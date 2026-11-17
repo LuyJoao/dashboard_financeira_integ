@@ -8,6 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
+import { usarModoImpressao } from "../lib/impressao";
 import { Carregando, ErroMsg, Vazio } from "./estados";
 
 type Props<T> = {
@@ -32,6 +33,7 @@ export function DataTable<T>({
   pageSize = 10,
 }: Props<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const imprimindo = usarModoImpressao(); // ao imprimir pelos botões, mostra todas as linhas
   const table = useReactTable({
     data,
     columns,
@@ -74,7 +76,7 @@ export function DataTable<T>({
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map((row) => (
+            {(imprimindo ? table.getPrePaginationRowModel() : table.getRowModel()).rows.map((row) => (
               <tr key={row.id} className="border-b last:border-0 hover:bg-slate-50">
                 {row.getVisibleCells().map((cell) => (
                   <td
@@ -90,7 +92,7 @@ export function DataTable<T>({
         </table>
       </div>
 
-      <div className="flex items-center justify-between border-t p-3 text-sm text-slate-600">
+      <div className="flex items-center justify-between border-t p-3 text-sm text-slate-600 print:hidden">
         <span>
           {data.length} registro(s) · página {pageIndex + 1} de {table.getPageCount()}
         </span>
