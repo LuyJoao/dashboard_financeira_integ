@@ -37,7 +37,8 @@ os.environ["SMTP_HOST"] = ""  # os testes nunca enviam e-mail de verdade
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.core.config import settings  # noqa: E402
-from app.db import Base, engine  # noqa: E402
+from app.db import Base, SessionLocal, engine  # noqa: E402
+from app.models import Categoria, Conta  # noqa: E402
 from app.main import app  # noqa: E402
 from app.services import previas  # noqa: E402
 
@@ -92,6 +93,16 @@ def _banco_de_teste():
 def _estado_limpo(_banco_de_teste, monkeypatch):
     with engine.begin() as c:
         c.execute(text("TRUNCATE " + ", ".join(Base.metadata.tables) + " RESTART IDENTITY CASCADE"))
+    with SessionLocal() as db:
+        db.add_all(
+            [
+                Conta(id=104, nome="104 - Caixa"),
+                Conta(id=136, nome="136 - Unicred"),
+                Conta(id=341, nome="341 - Itaú"),
+                Categoria(nome="Aplicação Financeira", sistema=True),
+            ]
+        )
+        db.commit()
     previas._previas.clear()
     monkeypatch.setattr(settings, "reset_intervalo_segundos", 0)  # os testes de limite ligam de novo
     yield

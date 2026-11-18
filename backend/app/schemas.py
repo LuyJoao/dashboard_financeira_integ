@@ -1,9 +1,16 @@
 from datetime import date, datetime
-from typing import Literal
+from typing import Annotated, Any, Literal
 
-from typing import Annotated
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    StrictInt,
+    StringConstraints,
+)
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, StringConstraints
+NomeCurto = Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=200)]
 
 
 class LoginIn(BaseModel):
@@ -40,6 +47,10 @@ class UsuarioUpdate(BaseModel):
     ativo: bool | None = None
 
 
+class RedefinirSenhaAdminIn(BaseModel):
+    nova_senha: str = Field(min_length=8)
+
+
 class TrocarSenhaIn(BaseModel):
     senha_atual: str
     nova_senha: str = Field(min_length=8)
@@ -60,35 +71,126 @@ class ErroLinha(BaseModel):
     coluna: str  # erros da aba Saldos_Mensais vêm com o prefixo "Saldos_Mensais · "
     mensagem: str
     aba: str = "Base"
+    bruto: dict[str, Any]
 
 
 class LinhaPrevia(BaseModel):
     linha: int
+    situacao: Literal["nova", "atualizada"]
     data: date
     banco: str
     categoria: str
     tipo: str
     descricao: str
     valor: int  # centavos, com sinal
-    empresa: str | None = None  # extra (opcional): vem da Observação "Empresa X"
+
+
+class LinhaAtualizada(BaseModel):
+    linha: int
+    descricao: str
+    mudancas: list[str]
+
+
+class SaldoSugerido(BaseModel):
+    mes: str
+    conta: str
+    entradas: int
+    saidas: int
+    saldo_inicial: int | None
+    saldo_final_informado: int | None
+    lido_do_extrato: bool
+
+
+class AplicadoSugerido(BaseModel):
+    mes: str
+    saldo_inicial: int | None
+    saldo_final: int | None
+    calculado: bool
 
 
 class Previa(BaseModel):
     token: str
     arquivo_nome: str
     total_linhas: int
-    linhas_ok: int
+    novas: int
+    atualizadas: int
+    iguais: int
     linhas_erro: int
-    saldos_ok: int = 0  # extra: linhas válidas da aba Saldos_Mensais (opcional na planilha)
-    saldos_erro: int = 0
-    linhas_substituidas: int  # extra: lançamentos já gravados nesses meses, que serão substituídos
-    periodos: list[str]  # ex.: ["Jan/26", "Fev/26"]
+    periodos: list[str]  # ex.: ["01-2026", "02-2026"]
+    categorias: list[str]
     amostra: list[LinhaPrevia]
+    atualizadas_detalhe: list[LinhaAtualizada]
     erros: list[ErroLinha]
+    saldos: list[SaldoSugerido]
+    aplicado: list[AplicadoSugerido]
+
+
+class LancamentoEdicaoIn(BaseModel):
+    data: date
+    banco: str
+    categoria: str
+    tipo: Literal["Receita", "Despesa", "Investimento"]
+    descricao: str
+    observacao: str
+    valor: StrictInt
+
+
+class Correcao(BaseModel):
+    linha: int
+    dados: LancamentoEdicaoIn
 
 
 class ConfirmarIn(BaseModel):
     token: str
+    correcoes: list[Correcao] = Field(default_factory=list)
+
+
+class EmpresaCreate(BaseModel):
+    nome: NomeCurto
+    tipo: Literal["incubada", "fornecedor"]
+    cnpj: str | None = Field(default=None, max_length=20)
+
+
+class EmpresaOut(BaseModel):
+    id: int
+    nome: str
+    tipo: Literal["incubada", "fornecedor"]
+    cnpj: str | None
+
+
+class CategoriaCreate(BaseModel):
+    nome: NomeCurto
+
+
+class CategoriaOut(BaseModel):
+    id: int
+    nome: str
+    sistema: bool
+    em_uso: int
+
+
+class TituloIn(BaseModel):
+    tipo: Literal["pagar", "receber"]
+    empresa_id: int
+    forma: Literal["NF", "Boleto"]
+    numero: str = Field(min_length=1, max_length=80)
+    descricao: str = Field(default="", max_length=255)
+    valor: StrictInt = Field(gt=0)
+    vencimento: date
+    pago_em: date | None = None
+
+
+class TituloOut(BaseModel):
+    id: int
+    tipo: Literal["pagar", "receber"]
+    empresa_id: int
+    empresa_nome: str
+    forma: Literal["NF", "Boleto"]
+    numero: str
+    descricao: str
+    valor: int
+    vencimento: date
+    pago_em: date | None
 
 
 class ImportacaoOut(BaseModel):
@@ -97,7 +199,9 @@ class ImportacaoOut(BaseModel):
     enviado_em: datetime
     usuario_nome: str
     linhas_total: int
-    linhas_ok: int
+    linhas_novas: int
+    linhas_atualizadas: int
+    linhas_iguais: int
     linhas_erro: int
     status: Literal["concluida", "concluida_com_erros"]
 
@@ -108,11 +212,17 @@ class LancamentoOut(BaseModel):
     data: date
     banco: str
     categoria: str
-    tipo: str
+    tipo: Literal["Receita", "Despesa", "Investimento"]
     descricao: str
+    observacao: str
     valor: int  # centavos, com sinal
-    empresa_id: int | None = None
-    empresa: str | None = None
+
+
+class EmpresaDetalheOut(EmpresaOut):
+    qtd_lancamentos: int
+    total_centavos: int
+    ultimo_lancamento: date | None
+    lancamentos: list[LancamentoOut]
 
 
 class TotaisOut(BaseModel):
@@ -127,55 +237,20 @@ class ResumoCategoriaOut(TotaisOut):
     categoria: str
 
 
-class LancamentosPagina(BaseModel):
-    itens: list[LancamentoOut]
-    total: int  # linhas que atendem aos filtros (todas as páginas)
-    pagina: int
-    tamanho: int
-    paginas: int
-    totais: TotaisOut  # calculados sobre TODAS as linhas filtradas, não só a página
-
-
 class FiltrosOut(BaseModel):
     bancos: list[str]
     categorias: list[str]
     tipos: list[str]
 
 
-class EmpresaOut(BaseModel):
-    id: int
-    nome: str
-    cnpj: str | None = None
-    qtd_lancamentos: int
-    total_centavos: int
-    ultimo_lancamento: date | None = None
-
-
-class EmpresasPagina(BaseModel):
-    itens: list[EmpresaOut]
-    total: int
-    pagina: int
-    tamanho: int
-    paginas: int
-
-
-class EmpresaDetalhe(EmpresaOut):
-    lancamentos: list[LancamentoOut]  # do mais recente para o mais antigo
-
-
 # ---------- Dashboard (contrato com o front: desktop/src/api/dashboard.ts) ----------
-class DashboardMes(BaseModel):
-    mes: str  # "Jan/26"
-    receitas: int
-    despesas: int  # negativo
-    aplicacoes: int  # negativo: dinheiro que saiu da conta para investir
-    resgates: int  # positivo: dinheiro que voltou do investimento
-
-
-class DashboardCategoria(BaseModel):
+class LinhaResumo(BaseModel):
+    mes: str
+    conta: str
     categoria: str
+    movimento: Literal["aplicacao", "resgate", "rendimento"] | None
     receitas: int
-    despesas: int  # negativo
+    despesas: int
 
 
 class DashboardSaldo(BaseModel):
@@ -187,13 +262,32 @@ class DashboardSaldo(BaseModel):
     saldo_final: int  # saldo_inicial + entradas + saidas
     saldo_informado: int
     diferenca: int  # saldo_final - saldo_informado
-    status: Literal["OK", "DIVERGÊNCIA"]
+    status: Literal["OK", "DIVERGÊNCIA", "NÃO CONFERIDO"]
+
+
+class SaldoAplicadoMes(BaseModel):
+    mes: str
+    saldo_inicial: int
+    saldo_final: int
 
 
 class DashboardOut(BaseModel):
     instituicao: str
     atualizado_em: datetime | None  # data e hora da última importação (null se nunca houve)
     contas: list[str]
-    meses: list[DashboardMes]
-    categorias: list[DashboardCategoria]
+    categorias: list[str]
+    meses: list[str]
+    resumo: list[LinhaResumo]
     saldos: list[DashboardSaldo]
+    aplicado: list[SaldoAplicadoMes]
+
+
+class AplicadoMes(SaldoAplicadoMes):
+    calculado: int
+
+
+class DadosSaldos(BaseModel):
+    contas: list[str]
+    meses: list[str]
+    saldos: list[DashboardSaldo]
+    aplicado: list[AplicadoMes]

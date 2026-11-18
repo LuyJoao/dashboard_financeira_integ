@@ -1,129 +1,100 @@
-"""Dashboard: valores esperados calculados à mão a partir de tests/planilhas.py."""
-from datetime import datetime
+from datetime import date
 
-import pytest
+from tests.planilhas import linha
 
-from app.core.config import settings
-from tests.planilhas import CAIXA, LINHAS_OK, SALDOS_OK, UNICRED, L, importar, xlsx
+CAIXA = "104 - Caixa"
+UNICRED = "136 - Unicred"
+ITAÚ = "341 - Itaú"
 
 
-def dashboard(client, h):
-    r = client.get("/api/dashboard", headers=h)
+def _criar_categoria(client, headers, nome):
+    resposta = client.post("/api/categorias", json={"nome": nome}, headers=headers)
+    assert resposta.status_code == 201, resposta.text
+
+
+def _importar(client, headers, registros):
+    from tests.planilhas import xlsx
+
+    p = client.post(
+        "/api/importacoes/previa",
+        files={"arquivo": ("saldos.xlsx", xlsx(registros))},
+        headers=headers,
+    )
+    assert p.status_code == 200, p.text
+    c = client.post(
+        "/api/importacoes/confirmar",
+        json={"token": p.json()["token"], "correcoes": []},
+        headers=headers,
+    )
+    assert c.status_code == 200, c.text
+
+
+def test_saldos_derivados_do_extrato_e_lancamento_manual(client, h_admin):
+    _criar_categoria(client, h_admin, "Receitas")
+    registros = [
+        linha(date(2026, 1, 3), CAIXA, "Despesa", "Compra", "Receitas", -10.0, saldo_apos=90.0),
+        linha(date(2026, 1, 10), CAIXA, "Receita", "Venda", "Receitas", 50.0, saldo_apos=141.0),
+        linha(date(2026, 1, 15), UNICRED, "Investimento", "Aplicação", "Aplicação Financeira", -100.0, "Investimento"),
+        linha(date(2026, 1, 20), UNICRED, "Receita", "Resgate", "Aplicação Financeira", 20.0),
+        linha(date(2026, 1, 25), UNICRED, "Receita", "Juros", "Aplicação Financeira", 5.0, "Rendimento"),
+    ]
+    _importar(client, h_admin, registros)
+    resposta = client.post(
+        "/api/lancamentos",
+        json={
+            "data": "2026-02-02",
+            "banco": CAIXA,
+            "categoria": "Receitas",
+            "tipo": "Receita",
+            "descricao": "Lançamento manual",
+            "observacao": "",
+            "valor": 1000,
+        },
+        headers=h_admin,
+    )
+    assert resposta.status_code == 201, resposta.text
+
+    r = client.get("/api/saldos", headers=h_admin)
     assert r.status_code == 200, r.text
-    return r.json()
+    d = r.json()
+    saldos = {(s["mes"], s["conta"]): s for s in d["saldos"]}
+    janeiro = saldos[("01-2026", CAIXA)]
+    fevereiro = saldos[("02-2026", CAIXA)]
+    assert (janeiro["saldo_inicial"], janeiro["saldo_final"], janeiro["saldo_informado"]) == (10000, 14000, 14100)
+    assert (janeiro["diferenca"], janeiro["status"]) == (-100, "DIVERGÊNCIA")
+    assert (fevereiro["saldo_inicial"], fevereiro["saldo_final"], fevereiro["status"]) == (14100, 15100, "NÃO CONFERIDO")
+    assert all(saldos[("02-2026", conta)]["status"] == "NÃO CONFERIDO" for conta in (UNICRED, ITAÚ))
+    assert d["aplicado"] == [
+        {"mes": "01-2026", "saldo_inicial": 0, "saldo_final": 8000, "calculado": 8000},
+        {"mes": "02-2026", "saldo_inicial": 8000, "saldo_final": 8000, "calculado": 8000},
+    ]
 
 
-@pytest.fixture
-def d(client, h_admin):
-    importar(client, h_admin, xlsx())
-    return dashboard(client, h_admin)
+def test_dashboard_agrega_e_classifica_aplicacao_pelo_sinal_e_observacao(client, h_admin):
+    _criar_categoria(client, h_admin, "Receitas")
+    registros = [
+        linha(date(2026, 1, 3), UNICRED, "Investimento", "Aplicação", "Aplicação Financeira", -100.0, "Investimento"),
+        linha(date(2026, 1, 4), UNICRED, "Receita", "Linha 320", "Aplicação Financeira", 20.0, "Resgate"),
+        linha(date(2026, 1, 5), UNICRED, "Receita", "Juros", "Aplicação Financeira", 5.0, "Rendimento"),
+        linha(date(2026, 1, 6), CAIXA, "Receita", "Venda", "Receitas", 10.0),
+    ]
+    _importar(client, h_admin, registros)
+
+    resposta = client.get("/api/dashboard", headers=h_admin)
+    assert resposta.status_code == 200, resposta.text
+    dados = resposta.json()
+    assert dados["meses"] == ["01-2026"]
+    assert dados["contas"] == [CAIXA, UNICRED, ITAÚ]
+    movimentos = {(l["descricao"] if "descricao" in l else l["categoria"], l["movimento"]) for l in dados["resumo"]}
+    assert ("Aplicação Financeira", "aplicacao") in movimentos
+    assert ("Aplicação Financeira", "resgate") in movimentos
+    assert ("Aplicação Financeira", "rendimento") in movimentos
+    assert all({"mes", "conta", "categoria", "movimento", "receitas", "despesas"} == set(row) for row in dados["resumo"])
 
 
-def test_sem_nenhuma_importacao_vem_vazio(client, h_admin):
-    assert dashboard(client, h_admin) == {
-        "instituicao": "INTEG", "atualizado_em": None, "contas": [], "meses": [], "categorias": [], "saldos": [],
-    }
-
-
-def test_instituicao_vem_da_configuracao(client, h_admin, monkeypatch):
-    monkeypatch.setattr(settings, "instituicao", "Outra Instituição")
-    assert dashboard(client, h_admin)["instituicao"] == "Outra Instituição"
-
-
-def test_atualizado_em_e_a_data_da_ultima_importacao(client, h_admin):
-    importar(client, h_admin, xlsx())
-    primeiro = dashboard(client, h_admin)["atualizado_em"]
-    importar(client, h_admin, xlsx())
-    segundo = dashboard(client, h_admin)["atualizado_em"]
-    assert primeiro and "T" in primeiro and segundo > primeiro
-
-
-def test_contas_e_meses_em_ordem(d):
-    assert d["contas"] == [CAIXA, UNICRED]
-    assert [m["mes"] for m in d["meses"]] == ["Jan/26", "Fev/26"]
-
-
-def test_receitas_despesas_aplicacoes_e_resgates_por_mes(d):
-    jan, fev = d["meses"]
-    # Jan: receitas 1500 + 1000,50 + 200 + rendimento 12,34 | despesas -300 | aplicação -5000 | resgate 1000
-    assert jan == {"mes": "Jan/26", "receitas": 271284, "despesas": -30000, "aplicacoes": -500000, "resgates": 100000}
-    # Fev: receitas 1500 | despesas -80,25 -8,50 -8,50 | sem aplicação | resgate 500
-    assert fev == {"mes": "Fev/26", "receitas": 150000, "despesas": -9725, "aplicacoes": 0, "resgates": 50000}
-
-
-def test_resgate_e_reconhecido_pela_observacao_e_pela_descricao(d):
-    # Jan: observação "Resgate" (descrição "Aplicação Financeira"); Fev: descrição "Resgate Aplicação" (sem observação)
-    assert d["meses"][0]["resgates"] == 100000 and d["meses"][1]["resgates"] == 50000
-
-
-def test_aplicacao_e_resgate_ficam_fora_das_categorias_e_o_rendimento_vira_receita(d):
-    c = {x["categoria"]: x for x in d["categorias"]}
-    assert "Aplicação Financeira" not in c
-    assert c["Rendimentos de Aplicações"] == {"categoria": "Rendimentos de Aplicações", "receitas": 1234, "despesas": 0}
-    assert c["Taxa de Incubação"] == {"categoria": "Taxa de Incubação", "receitas": 400050, "despesas": 0}
-    assert c["Despesas Administrativas"]["despesas"] == -38025 and c["Tarifas Bancárias"]["despesas"] == -1700
-    assert [x["categoria"] for x in d["categorias"]] == sorted(c)  # em ordem alfabética
-
-
-def test_receitas_e_despesas_das_categorias_fecham_com_as_dos_meses(d):
-    assert sum(c["receitas"] for c in d["categorias"]) == sum(m["receitas"] for m in d["meses"])
-    assert sum(c["despesas"] for c in d["categorias"]) == sum(m["despesas"] for m in d["meses"])
-
-
-def test_conciliacao_bate_quando_os_saldos_informados_estao_certos(d):
-    s = {(x["mes"], x["conta"]): x for x in d["saldos"]}
-    assert len(s) == 4 and all(x["status"] == "OK" and x["diferenca"] == 0 for x in s.values())
-    # Jan Unicred: inicial 10.000 + entradas 3.512,84 (1500+1000,50+12,34+1000) + saídas -5.300 (-300-5000) = 8.212,84
-    assert s[("Jan/26", UNICRED)] == {
-        "mes": "Jan/26", "conta": UNICRED, "saldo_inicial": 1000000, "entradas": 351284, "saidas": -530000,
-        "saldo_final": 821284, "saldo_informado": 821284, "diferenca": 0, "status": "OK",
-    }
-    # a conciliação conta TUDO pelo sinal (inclusive aplicações e resgates), como a planilha
-    assert (s[("Fev/26", UNICRED)]["entradas"], s[("Fev/26", UNICRED)]["saidas"], s[("Fev/26", UNICRED)]["saldo_final"]) == (200000, -1700, 1019584)
-    assert (s[("Fev/26", CAIXA)]["saldo_final"], s[("Jan/26", CAIXA)]["saldo_final"]) == (11975, 20000)
-
-
-def test_divergencia_quando_o_saldo_informado_nao_bate(client, h_admin):
-    saldos = [dict(x) for x in SALDOS_OK]
-    saldos[1]["Saldo Final Informado"] += 1.00  # Jan Unicred: informado R$ 1,00 acima do calculado
-    importar(client, h_admin, xlsx(saldos=saldos))
-    s = {(x["mes"], x["conta"]): x for x in dashboard(client, h_admin)["saldos"]}
-    assert s[("Jan/26", UNICRED)]["status"] == "DIVERGÊNCIA" and s[("Jan/26", UNICRED)]["diferenca"] == -100
-    assert s[("Fev/26", UNICRED)]["status"] == "OK"
-
-
-def test_linha_recusada_na_importacao_aparece_como_divergencia(client, h_admin):
-    # uma despesa de 30,00 com data fora do mês é recusada; o saldo informado já a considerava -> diferença de 30,00
-    saldos = [dict(x) for x in SALDOS_OK]
-    saldos[1]["Saldo Final Informado"] -= 30.00
-    ruim = L("Jan/26", datetime(2026, 3, 9), UNICRED, "Despesa", "Fora do mês", "Outros", -30.0)
-    importar(client, h_admin, xlsx(LINHAS_OK + [ruim], saldos=saldos))
-    s = {(x["mes"], x["conta"]): x for x in dashboard(client, h_admin)["saldos"]}
-    assert s[("Jan/26", UNICRED)]["status"] == "DIVERGÊNCIA" and s[("Jan/26", UNICRED)]["diferenca"] == 3000
-
-
-def test_sem_aba_de_saldos_nao_ha_conciliacao_mas_o_resto_funciona(client, h_admin):
-    importar(client, h_admin, xlsx(saldos=None))
-    d = dashboard(client, h_admin)
-    assert d["saldos"] == [] and len(d["meses"]) == 2 and d["contas"] == [CAIXA, UNICRED]
-
-
-def test_mes_so_com_saldos_aparece_com_zeros(client, h_admin):
-    saldos = SALDOS_OK + [{"Mês": "Mar/26", "Banco": CAIXA, "Saldo Inicial": 5.0, "Saldo Final Informado": 5.0}]
-    importar(client, h_admin, xlsx(saldos=saldos))
-    d = dashboard(client, h_admin)
-    assert d["meses"][-1] == {"mes": "Mar/26", "receitas": 0, "despesas": 0, "aplicacoes": 0, "resgates": 0}
-    assert d["saldos"][-1]["status"] == "OK"
-
-
-def test_investimento_positivo_conta_como_resgate(client, h_admin):
-    extra = L("Jan/26", datetime(2026, 1, 28), UNICRED, "Investimento", "Resgate parcial", "Aplicação Financeira", 300.0)
-    importar(client, h_admin, xlsx(LINHAS_OK + [extra], saldos=None))
-    assert dashboard(client, h_admin)["meses"][0]["resgates"] == 100000 + 30000
-
-
-def test_receita_de_aplicacao_sem_a_palavra_resgate_e_rendimento(client, h_admin):
-    extra = L("Jan/26", datetime(2026, 1, 28), UNICRED, "Receita", "Crédito CDB", "Aplicação Financeira", 7.0)
-    importar(client, h_admin, xlsx(LINHAS_OK + [extra], saldos=None))
-    d = dashboard(client, h_admin)
-    assert d["meses"][0]["receitas"] == 271284 + 700 and d["meses"][0]["resgates"] == 100000
+def test_categorias_e_contas_seedadas_sao_listadas(client, h_admin):
+    categorias = client.get("/api/categorias", headers=h_admin)
+    contas = client.get("/api/contas", headers=h_admin)
+    assert categorias.status_code == contas.status_code == 200
+    assert any(c["nome"] == "Aplicação Financeira" and c["sistema"] for c in categorias.json())
+    assert contas.json() == [CAIXA, UNICRED, ITAÚ]

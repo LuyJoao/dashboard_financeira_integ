@@ -6,7 +6,7 @@ from ..core.security import hash_senha
 from ..db import get_db
 from ..deps import exigir_admin
 from ..models import Usuario
-from ..schemas import UsuarioCreate, UsuarioOut, UsuarioUpdate
+from ..schemas import RedefinirSenhaAdminIn, UsuarioCreate, UsuarioOut, UsuarioUpdate
 
 # Todas as rotas deste módulo exigem administrador (cadastro só pelo admin).
 router = APIRouter(prefix="/api/usuarios", tags=["usuarios"], dependencies=[Depends(exigir_admin)])
@@ -44,10 +44,17 @@ def editar(
     if not mudancas:
         raise HTTPException(422, "Informe ao menos um campo para alterar")
 
-    # Quem edita é sempre um administrador ativo; só ele mesmo pode ficar sem o acesso. Impedir isso
-    # também garante que sempre exista ao menos um administrador ativo.
-    if user.id == admin.id and (mudancas.get("role", user.role) != "admin" or mudancas.get("ativo", user.ativo) is False):
-        raise HTTPException(409, "Você não pode remover o seu próprio acesso de administrador.")
+    removendo_admin_ativo = (
+        user.role == "admin"
+        and user.ativo
+        and (mudancas.get("role", user.role) != "admin" or mudancas.get("ativo", user.ativo) is False)
+    )
+    if removendo_admin_ativo:
+        admins_ativos = db.scalars(
+            select(Usuario).where(Usuario.role == "admin", Usuario.ativo.is_(True)).with_for_update()
+        ).all()
+        if len(admins_ativos) <= 1:
+            raise HTTPException(409, "Não é possível desativar ou rebaixar o último administrador ativo.")
 
     if "email" in mudancas:
         novo = mudancas["email"].lower()
@@ -60,3 +67,12 @@ def editar(
     db.commit()
     db.refresh(user)
     return user
+
+
+@router.post("/{usuario_id}/redefinir-senha", status_code=204)
+def redefinir_senha(usuario_id: int, dados: RedefinirSenhaAdminIn, db: Session = Depends(get_db)):
+    user = db.get(Usuario, usuario_id)
+    if not user:
+        raise HTTPException(404, "Usuário não encontrado")
+    user.senha_hash = hash_senha(dados.nova_senha)
+    db.commit()

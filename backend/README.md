@@ -31,7 +31,8 @@ python -m venv .venv && source .venv/bin/activate   # Linux: ativa a variavel de
 .venv\Scripts\activate # Windows: ativa a variavel de ambiente no windows
 pip install -r requirements.txt
 copy .env.example .env                 # ajuste DATABASE_URL e troque SECRET_KEY
-python -m app.seed admin@empresa.com "Administrador" SenhaForte123   # cria tabelas e 1º admin
+alembic upgrade head                 # cria/atualiza o schema e semeia contas/categoria do sistema
+python -m app.seed admin@empresa.com "Administrador" SenhaForte123   # cria o 1º admin
 uvicorn app.main:app --reload
 ```
 
@@ -51,21 +52,8 @@ npm run electron:build    # gera o instalador em desktop/release
 
 Em produção, aponte `VITE_API_URL` (em `desktop/.env`) para a URL HTTPS da API antes do build.
 
-## O que já está pronto
-
-- Login (JWT), `/me`, esqueci/redefinir senha (código de uso único, expira em 30 min)
-- Cadastro de usuários só por administrador (`/api/usuarios`, tela "Usuários")
-- Navbar com rotas, iniciais + nome do usuário logado e botão Sair
-- Rotas protegidas (e rota exclusiva de admin)
-- Modelos: usuários, reset de senha, empresas, importações, pagamentos (valor em centavos)
-
-## Próximos passos
-
-1. Alembic no lugar do `create_all`
-2. Importação do Excel (`pandas` + `openpyxl`), com prévia e upsert pela chave (empresa, documento, competência)
-3. Empresas, pagamentos e filtros por categoria
-4. Dashboard (endpoints agregados + Recharts)
-5. Token no armazenamento seguro do Electron (`safeStorage`) e auto-update (`electron-updater`)
+O schema é gerenciado exclusivamente pelo Alembic. A migração inicializa as três contas fixas e a categoria de sistema
+"Aplicação Financeira"; o comando `app.seed` cria apenas o primeiro administrador.
 
 ## Servidor na rede interna
 
