@@ -129,7 +129,7 @@ export default function Categorias() {
   );
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="mx-auto max-w-3xl space-y-4">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">Categorias</h1>
         <div className="flex items-center gap-2">

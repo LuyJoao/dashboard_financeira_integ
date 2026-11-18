@@ -22,32 +22,34 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <AvisoDemonstracao />
-      <header className="flex items-center justify-between border-b bg-white px-6 py-3 print:hidden">
-        <nav className="flex items-center gap-1">
-          <span className="mr-4 font-semibold">INTEG</span>
-          <NavLink to="/" end className={linkCls}>Dashboard</NavLink>
-          <NavLink to="/lancamentos" className={linkCls}>Lançamentos</NavLink>
-          <NavLink to="/empresas" className={linkCls}>Empresas</NavLink>
-          <NavLink to="/contas" className={linkCls}>Contas</NavLink>
-          <NavLink to="/importar" className={linkCls}>Importar</NavLink>
-          {user!.role === "admin" && (
-            <>
-              <NavLink to="/saldos" className={linkCls}>Saldos</NavLink>
-              <NavLink to="/categorias" className={linkCls}>Categorias</NavLink>
-              <NavLink to="/usuarios" className={linkCls}>Usuários</NavLink>
-            </>
-          )}
-        </nav>
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-sm font-medium text-white">
-            {iniciais}
+      <header className="border-b bg-white print:hidden">
+        <div className="mx-auto flex w-full max-w-[1536px] items-center justify-between px-6 py-3">
+          <nav className="flex items-center gap-1">
+            <span className="mr-4 font-semibold">INTEG</span>
+            <NavLink to="/" end className={linkCls}>Dashboard</NavLink>
+            <NavLink to="/lancamentos" className={linkCls}>Lançamentos</NavLink>
+            <NavLink to="/empresas" className={linkCls}>Empresas</NavLink>
+            <NavLink to="/contas" className={linkCls}>Contas</NavLink>
+            <NavLink to="/importar" className={linkCls}>Importar</NavLink>
+            {user!.role === "admin" && (
+              <>
+                <NavLink to="/saldos" className={linkCls}>Saldos</NavLink>
+                <NavLink to="/categorias" className={linkCls}>Categorias</NavLink>
+                <NavLink to="/usuarios" className={linkCls}>Usuários</NavLink>
+              </>
+            )}
+          </nav>
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-sm font-medium text-white">
+              {iniciais}
+            </div>
+            <span className="text-sm">{user!.nome}</span>
+            <button onClick={logout} className="text-sm text-slate-500 hover:text-slate-900">Sair</button>
           </div>
-          <span className="text-sm">{user!.nome}</span>
-          <button onClick={logout} className="text-sm text-slate-500 hover:text-slate-900">Sair</button>
         </div>
       </header>
       <CabecalhoImpressao />
-      <main className="p-6">
+      <main className="mx-auto w-full max-w-[1536px] p-6">
         <Outlet />
       </main>
     </div>
