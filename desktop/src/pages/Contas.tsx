@@ -15,14 +15,13 @@ import { Modal } from "../components/Modal";
 import { btnCls, inputCls } from "../components/ui";
 import { useFiltros } from "../hooks/useFiltros";
 import { formatBRL, formatData } from "../lib/format";
-import { hojeISO } from "../lib/lancamentos";
-import { diasDeAtraso, ROTULO_STATUS, resumoTitulos, statusDoTitulo, validarTitulo } from "../lib/titulos";
+import { diasDeAtraso, hojeSaoPauloISO, ROTULO_STATUS, resumoTitulos, statusDoTitulo, validarTitulo } from "../lib/titulos";
 
 const textoErro = (e: unknown) => mensagemErro(e, e instanceof Error ? e.message : undefined);
 const paraEdicao = ({ id: _id, empresa_nome: _n, ...resto }: Titulo): TituloEdicao => resto;
 const TIPOS: Record<string, string> = { "A pagar": "pagar", "A receber": "receber" };
 const emBranco = (): TituloEdicao => ({
-  tipo: "pagar", empresa_id: 0, forma: "NF", numero: "", descricao: "", valor: 0, vencimento: hojeISO(), pago_em: null,
+  tipo: "pagar", empresa_id: 0, forma: "NF", numero: "", descricao: "", valor: 0, vencimento: hojeSaoPauloISO(), pago_em: null,
 });
 
 function Selo({ titulo }: { titulo: Titulo }) {
@@ -45,7 +44,7 @@ function Selo({ titulo }: { titulo: Titulo }) {
 function FormPagamento({ titulo, enviando, erro, onConfirmar, onCancelar }: {
   titulo: Titulo; enviando: boolean; erro?: string; onConfirmar: (data: string) => void; onCancelar: () => void;
 }) {
-  const [data, setData] = useState(hojeISO());
+  const [data, setData] = useState(hojeSaoPauloISO());
   const problemas = validarTitulo({ ...paraEdicao(titulo), pago_em: data || null });
   return (
     <div className="space-y-3 text-sm">

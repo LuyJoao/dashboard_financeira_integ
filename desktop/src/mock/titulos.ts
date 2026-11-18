@@ -1,10 +1,9 @@
 import type { Titulo, TituloEdicao } from "../api/titulos";
-import { hojeISO } from "../lib/lancamentos";
-import { somaDias } from "../lib/titulos";
+import { hojeSaoPauloISO, somaDias } from "../lib/titulos";
 import { nomeDaEmpresaMock } from "./empresas";
 
 // As datas são relativas a HOJE, para a demonstração sempre ter títulos vencidos, a vencer e pagos.
-const d = (n: number) => somaDias(hojeISO(), n);
+const d = (n: number) => somaDias(hojeSaoPauloISO(), n);
 type Base = Omit<Titulo, "empresa_nome">;
 
 let TITULOS: Base[] = [

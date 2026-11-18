@@ -1,10 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Titulo, TituloEdicao } from "../api/titulos";
-import { hojeISO } from "./lancamentos";
-import { diasDeAtraso, resumoTitulos, statusDoTitulo, validarTitulo } from "./titulos";
+import { diasDeAtraso, hojeSaoPauloISO, resumoTitulos, statusDoTitulo, validarTitulo } from "./titulos";
 import { somaDias } from "./titulos";
 
-const hoje = hojeISO();
+const hoje = hojeSaoPauloISO();
 const d = (dias: number) => somaDias(hoje, dias);
 
 const titulo = (sobrescritos: Partial<Titulo> = {}): Titulo => ({
@@ -35,6 +34,16 @@ const titulosExemplo = [
 ];
 
 describe("regras dos títulos", () => {
+  it("usa a data de America/Sao_Paulo perto da meia-noite UTC", () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date("2026-03-20T02:30:00Z"));
+      expect(hojeSaoPauloISO()).toBe("2026-03-19");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("classifica atraso, vencimento hoje e pagamento sem depender de datas fixas do sistema", () => {
     const atrasado = titulo({ vencimento: d(-12) });
 

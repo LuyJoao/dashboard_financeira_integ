@@ -1,19 +1,24 @@
 import { DADOS_DASHBOARD } from "../mock/dashboardDados";
 import { listarManuaisMock } from "../mock/lancamentos";
-import { obterOverrideAplicado, obterOverrideSaldo } from "../mock/saldosOverrides";
 import type { DadosDashboard, SaldoAplicadoMes, SaldoContaMes } from "./dashboard";
 
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const mesAPI = (mes: string) => {
+  if (/^(0[1-9]|1[0-2])-\d{4}$/.test(mes)) return mes;
+  const [nome, ano] = mes.split("/");
+  const numero = MESES.indexOf(nome) + 1;
+  return numero > 0 ? `${String(numero).padStart(2, "0")}-20${ano}` : mes;
+};
 const rotulo = (dataISO: string) => {
   const [ano, mes] = dataISO.split("-");
-  return `${MESES[Number(mes) - 1]}/${ano.slice(-2)}`;
+  return `${mes}-${ano}`;
 };
 const ordemDoMes = (mes: string) => {
-  const [nome, ano] = mes.split("/");
-  return Number(`20${ano}`) * 12 + MESES.indexOf(nome);
+  const [numero, ano] = mesAPI(mes).split("-");
+  return Number(ano) * 12 + Number(numero);
 };
 
-export type ExtraAplicado = Record<string, { calculado: number; sobrescrito: boolean }>;
+export type ExtraAplicado = Record<string, { calculado: number }>;
 
 // saldo_final = calculado (inicial + entradas + saídas). Com saldo do extrato: OK ou DIVERGÊNCIA. Sem ele: NÃO CONFERIDO.
 function recalcular(s: SaldoContaMes, extrato: number | null) {
@@ -29,14 +34,14 @@ function recalcular(s: SaldoContaMes, extrato: number | null) {
   }
 }
 
-// Simula o que a API fará: junta ao que veio da importação os lançamentos manuais e o que o usuário informou na tela de Saldos.
+// Simula o que a API fará: junta ao que veio da importação os lançamentos manuais. Os saldos NÃO são editáveis (tela de Saldos é só consulta).
 // Regras dos saldos: veja docs/regra-saldos.md.
 export function montarDadosDashboardMock(): { dados: DadosDashboard; aplicadoExtra: ExtraAplicado } {
-  const resumo = DADOS_DASHBOARD.resumo.map((l) => ({ ...l }));
-  const saldos: SaldoContaMes[] = DADOS_DASHBOARD.saldos.map((s) => ({ ...s }));
-  const aplicado: SaldoAplicadoMes[] = DADOS_DASHBOARD.aplicado.map((a) => ({ ...a }));
-  const mesesBase = new Set(DADOS_DASHBOARD.meses);
-  const meses = new Set(DADOS_DASHBOARD.meses);
+  const resumo = DADOS_DASHBOARD.resumo.map((l) => ({ ...l, mes: mesAPI(l.mes) }));
+  const saldos: SaldoContaMes[] = DADOS_DASHBOARD.saldos.map((s) => ({ ...s, mes: mesAPI(s.mes) }));
+  const aplicado: SaldoAplicadoMes[] = DADOS_DASHBOARD.aplicado.map((a) => ({ ...a, mes: mesAPI(a.mes) }));
+  const mesesBase = new Set(DADOS_DASHBOARD.meses.map(mesAPI));
+  const meses = new Set(mesesBase);
   const contas = new Set(DADOS_DASHBOARD.contas);
   const categorias = new Set(DADOS_DASHBOARD.categorias);
   const manuais = listarManuaisMock();
@@ -50,11 +55,11 @@ export function montarDadosDashboardMock(): { dados: DadosDashboard; aplicadoExt
     const movimento =
       lancamento.categoria !== "Aplicação Financeira"
         ? null
-        : lancamento.observacao === "Investimento"
+        : lancamento.valor < 0
           ? "aplicacao"
-          : lancamento.observacao === "Resgate"
-            ? "resgate"
-            : "rendimento";
+          : lancamento.observacao === "Rendimento"
+            ? "rendimento"
+            : "resgate";
     const linha = resumo.find(
       (l) => l.mes === mesLabel && l.conta === lancamento.banco && l.categoria === lancamento.categoria && l.movimento === movimento
     );
@@ -93,40 +98,37 @@ export function montarDadosDashboardMock(): { dados: DadosDashboard; aplicadoExt
 
   for (const mes of ordenados) {
     for (const conta of listaContas) {
-      const ov = obterOverrideSaldo(mes, conta);
       let s = saldos.find((x) => x.mes === mes && x.conta === conta);
       const mov = movDoMes(mes, conta);
       if (s) {
         // mês com saldo do extrato (importado): o lançamento manual muda o calculado, o do extrato continua
         s.entradas += mov.entradas;
         s.saidas += mov.saidas;
-        if (ov) s.saldo_inicial = ov.saldo_inicial;
-        recalcular(s, ov ? ov.saldo_extrato : s.saldo_informado);
+        recalcular(s, s.saldo_informado);
       } else if (!mesesBase.has(mes)) {
         // mês criado só por lançamentos manuais: calcula a partir do mês anterior, para todas as contas
         s = {
-          mes, conta, saldo_inicial: ov?.saldo_inicial ?? ultimoSaldo[conta] ?? 0, entradas: mov.entradas, saidas: mov.saidas,
+          mes, conta, saldo_inicial: ultimoSaldo[conta] ?? 0, entradas: mov.entradas, saidas: mov.saidas,
           saldo_final: 0, saldo_informado: 0, diferenca: 0, status: "NÃO CONFERIDO",
         };
-        recalcular(s, ov ? ov.saldo_extrato : null);
+        recalcular(s, null);
         saldos.push(s);
       }
       if (s) ultimoSaldo[conta] = s.saldo_informado;
     }
 
     let a = aplicado.find((x) => x.mes === mes);
-    const ovA = obterOverrideAplicado(mes);
     if (a) {
       const fluxo = a.saldo_final - a.saldo_inicial; // aplicações menos resgates do mês, dos dados de exemplo
       if (!primeiroAplicado) a.saldo_inicial = ultimoAplicado; // encadeia com o mês anterior
       const calculado = a.saldo_inicial + fluxo - fluxoAplicacaoManual(mes);
-      a.saldo_final = ovA ?? calculado;
-      aplicadoExtra[mes] = { calculado, sobrescrito: ovA !== undefined };
+      a.saldo_final = calculado;
+      aplicadoExtra[mes] = { calculado };
     } else {
       const calculado = ultimoAplicado - fluxoAplicacaoManual(mes);
-      a = { mes, saldo_inicial: ultimoAplicado, saldo_final: ovA ?? calculado };
+      a = { mes, saldo_inicial: ultimoAplicado, saldo_final: calculado };
       aplicado.push(a);
-      aplicadoExtra[mes] = { calculado, sobrescrito: ovA !== undefined };
+      aplicadoExtra[mes] = { calculado };
     }
     ultimoAplicado = a.saldo_final;
     primeiroAplicado = false;

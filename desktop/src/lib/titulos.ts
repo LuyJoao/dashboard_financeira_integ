@@ -1,5 +1,4 @@
 import type { Titulo, TituloEdicao } from "../api/titulos";
-import { hojeISO } from "./lancamentos";
 
 export type StatusTitulo = "pago" | "vencido" | "vence_hoje" | "a_vencer";
 export const ROTULO_STATUS: Record<StatusTitulo, string> = {
@@ -13,6 +12,17 @@ const dia = (iso: string) => {
   const [a, m, d] = iso.split("-").map(Number);
   return Date.UTC(a, m - 1, d) / 86400000;
 };
+
+export function hojeSaoPauloISO(): string {
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const valores = Object.fromEntries(partes.map((parte) => [parte.type, parte.value]));
+  return `${valores.year}-${valores.month}-${valores.day}`;
+}
 
 // Dias de a até b (positivo se b é depois de a). Datas AAAA-MM-DD, sem fuso horário.
 export const diasEntre = (a: string, b: string) => Math.round(dia(b) - dia(a));
@@ -31,15 +41,15 @@ export function dataValidaISO(s: string): boolean {
 }
 
 // O atraso NÃO é guardado: é calculado. Vencido = não pago e vencimento antes de hoje.
-export function statusDoTitulo(t: Pick<Titulo, "vencimento" | "pago_em">, hoje = hojeISO()): StatusTitulo {
+export function statusDoTitulo(t: Pick<Titulo, "vencimento" | "pago_em">, hoje = hojeSaoPauloISO()): StatusTitulo {
   if (t.pago_em) return "pago";
   const d = diasEntre(hoje, t.vencimento);
   return d < 0 ? "vencido" : d === 0 ? "vence_hoje" : "a_vencer";
 }
 
-export const diasDeAtraso = (t: Pick<Titulo, "vencimento">, hoje = hojeISO()) => Math.max(0, diasEntre(t.vencimento, hoje));
+export const diasDeAtraso = (t: Pick<Titulo, "vencimento">, hoje = hojeSaoPauloISO()) => Math.max(0, diasEntre(t.vencimento, hoje));
 
-export function validarTitulo(t: TituloEdicao, hoje = hojeISO()): string[] {
+export function validarTitulo(t: TituloEdicao, hoje = hojeSaoPauloISO()): string[] {
   const erros: string[] = [];
   if (!t.empresa_id) erros.push("Escolha a empresa.");
   if (!t.numero.trim()) erros.push("Informe o número do documento.");
@@ -54,7 +64,7 @@ export function validarTitulo(t: TituloEdicao, hoje = hojeISO()): string[] {
 
 const soma = (xs: Titulo[]) => xs.reduce((t, x) => t + x.valor, 0);
 
-export function resumoTitulos(titulos: Titulo[], hoje = hojeISO()) {
+export function resumoTitulos(titulos: Titulo[], hoje = hojeSaoPauloISO()) {
   const abertos = titulos.filter((t) => !t.pago_em);
   const vencidos = abertos.filter((t) => statusDoTitulo(t, hoje) === "vencido");
   const prox7 = abertos.filter((t) => {

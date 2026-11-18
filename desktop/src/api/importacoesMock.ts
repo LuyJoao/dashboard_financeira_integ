@@ -9,8 +9,8 @@ const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const BASE = {
  "periodos": [
-  "Mai/26",
-  "Jun/26"
+  "05-2026",
+  "06-2026"
  ],
  "total": 152,
  "novas": 22,
@@ -141,7 +141,7 @@ const BASE = {
     "tipo": "Despesa",
     "descricao": "Ref. Cv 03/26 - Palmital",
     "observacao": "Bolsa Wellington Barbosa da Silva",
-    "valor": -400000
+    "valor": -4000
    }
   },
   {
@@ -155,7 +155,7 @@ const BASE = {
     "tipo": "Despesa",
     "descricao": "Carlos Alberto Vaz",
     "observacao": "Ref. Análise de combustíveis",
-    "valor": 65000
+    "valor": 650
    }
   },
   {
@@ -169,13 +169,13 @@ const BASE = {
     "tipo": "Receita",
     "descricao": "Resgate Aplicação",
     "observacao": "",
-    "valor": 2000001
+    "valor": 20000.01
    }
   }
  ],
  "saldosErros": [
   {
-   "mes": "Mai/26",
+   "mes": "05-2026",
    "conta": "104 - Caixa",
    "entradas": 1555000,
    "saidas": -1007100,
@@ -184,7 +184,7 @@ const BASE = {
    "lido_do_extrato": true
   },
   {
-   "mes": "Mai/26",
+   "mes": "05-2026",
    "conta": "136 - Unicred",
    "entradas": 5168883,
    "saidas": -8656409,
@@ -193,7 +193,7 @@ const BASE = {
    "lido_do_extrato": true
   },
   {
-   "mes": "Mai/26",
+   "mes": "05-2026",
    "conta": "341 - Itaú",
    "entradas": 6500,
    "saidas": -16900,
@@ -202,7 +202,7 @@ const BASE = {
    "lido_do_extrato": true
   },
   {
-   "mes": "Jun/26",
+   "mes": "06-2026",
    "conta": "104 - Caixa",
    "entradas": 1549600,
    "saidas": -1616814,
@@ -211,7 +211,7 @@ const BASE = {
    "lido_do_extrato": true
   },
   {
-   "mes": "Jun/26",
+   "mes": "06-2026",
    "conta": "136 - Unicred",
    "entradas": 1678547,
    "saidas": -3971000,
@@ -220,7 +220,7 @@ const BASE = {
    "lido_do_extrato": true
   },
   {
-   "mes": "Jun/26",
+   "mes": "06-2026",
    "conta": "341 - Itaú",
    "entradas": 6601,
    "saidas": -16900,
@@ -231,7 +231,7 @@ const BASE = {
  ],
  "saldosLimpo": [
   {
-   "mes": "Mai/26",
+   "mes": "05-2026",
    "conta": "104 - Caixa",
    "entradas": 1620000,
    "saidas": -1407100,
@@ -240,7 +240,7 @@ const BASE = {
    "lido_do_extrato": true
   },
   {
-   "mes": "Mai/26",
+   "mes": "05-2026",
    "conta": "136 - Unicred",
    "entradas": 5168883,
    "saidas": -8656409,
@@ -249,7 +249,7 @@ const BASE = {
    "lido_do_extrato": true
   },
   {
-   "mes": "Mai/26",
+   "mes": "05-2026",
    "conta": "341 - Itaú",
    "entradas": 6500,
    "saidas": -16900,
@@ -258,7 +258,7 @@ const BASE = {
    "lido_do_extrato": true
   },
   {
-   "mes": "Jun/26",
+   "mes": "06-2026",
    "conta": "104 - Caixa",
    "entradas": 1549600,
    "saidas": -1616814,
@@ -267,7 +267,7 @@ const BASE = {
    "lido_do_extrato": true
   },
   {
-   "mes": "Jun/26",
+   "mes": "06-2026",
    "conta": "136 - Unicred",
    "entradas": 3678548,
    "saidas": -3971000,
@@ -276,7 +276,7 @@ const BASE = {
    "lido_do_extrato": true
   },
   {
-   "mes": "Jun/26",
+   "mes": "06-2026",
    "conta": "341 - Itaú",
    "entradas": 6601,
    "saidas": -16900,
@@ -287,13 +287,13 @@ const BASE = {
  ],
  "aplicado": [
   {
-   "mes": "Mai/26",
+   "mes": "05-2026",
    "saldo_inicial": 51199998,
    "saldo_final": 51199998,
    "calculado": true
   },
   {
-   "mes": "Jun/26",
+   "mes": "06-2026",
    "saldo_inicial": 51199998,
    "saldo_final": 49199997,
    "calculado": true
@@ -303,9 +303,9 @@ const BASE = {
 
 let proximoId = 4;
 const historico: Importacao[] = [
-  { id: 3, arquivo_nome: "Base_Maio_2026.xlsx", enviado_em: "2026-06-03T14:20:00-03:00", usuario_nome: "Administrador", linhas_total: 52, linhas_novas: 52, linhas_atualizadas: 0, linhas_erro: 0, status: "concluida" },
-  { id: 2, arquivo_nome: "Base_Abril_2026.xlsx", enviado_em: "2026-05-05T09:42:00-03:00", usuario_nome: "Administrador", linhas_total: 58, linhas_novas: 56, linhas_atualizadas: 0, linhas_erro: 2, status: "concluida_com_erros" },
-  { id: 1, arquivo_nome: "Base_Janeiro_2026.xlsx", enviado_em: "2026-02-04T16:05:00-03:00", usuario_nome: "Administrador", linhas_total: 61, linhas_novas: 61, linhas_atualizadas: 0, linhas_erro: 0, status: "concluida" },
+  { id: 3, arquivo_nome: "Base_Maio_2026.xlsx", enviado_em: "2026-06-03T14:20:00-03:00", usuario_nome: "Administrador", linhas_total: 52, linhas_novas: 52, linhas_atualizadas: 0, linhas_iguais: 0, linhas_erro: 0, status: "concluida" },
+  { id: 2, arquivo_nome: "Base_Abril_2026.xlsx", enviado_em: "2026-05-05T09:42:00-03:00", usuario_nome: "Administrador", linhas_total: 58, linhas_novas: 56, linhas_atualizadas: 0, linhas_iguais: 0, linhas_erro: 2, status: "concluida_com_erros" },
+  { id: 1, arquivo_nome: "Base_Janeiro_2026.xlsx", enviado_em: "2026-02-04T16:05:00-03:00", usuario_nome: "Administrador", linhas_total: 61, linhas_novas: 61, linhas_atualizadas: 0, linhas_iguais: 0, linhas_erro: 0, status: "concluida" },
 ];
 const pendentes = new Map<string, Previa>();
 
@@ -347,6 +347,7 @@ export async function confirmarMock(c: ConfirmacaoImportacao): Promise<Importaca
     linhas_total: p.total_linhas,
     linhas_novas: p.novas + c.correcoes.length,
     linhas_atualizadas: p.atualizadas,
+    linhas_iguais: p.iguais,
     linhas_erro: erroRestante,
     status: erroRestante > 0 ? "concluida_com_erros" : "concluida",
   };

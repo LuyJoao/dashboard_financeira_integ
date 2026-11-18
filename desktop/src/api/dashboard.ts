@@ -13,7 +13,7 @@ import { buscarDashboardMock } from "./dashboardMock";
 export type Movimento = "aplicacao" | "resgate" | "rendimento";
 
 export type LinhaResumo = {
-  mes: string; // "Jan/26"
+  mes: string; // "MM-AAAA"
   conta: string; // "104 - Caixa"
   categoria: string;
   movimento: Movimento | null;
@@ -33,14 +33,14 @@ export type SaldoContaMes = {
   status: "OK" | "DIVERGÊNCIA" | "NÃO CONFERIDO"; // NÃO CONFERIDO = não há saldo do extrato (saldo calculado dos lançamentos)
 };
 
-export type SaldoAplicadoMes = { mes: string; saldo_inicial: number; saldo_final: number }; // informado no sistema
+export type SaldoAplicadoMes = { mes: string; saldo_inicial: number; saldo_final: number }; // calculado
 
 export type DadosDashboard = {
   instituicao: string;
-  atualizado_em: string; // data e hora da última importação
+  atualizado_em: string | null; // data e hora da última importação
   contas: string[];
   categorias: string[];
-  meses: string[]; // em ordem cronológica
+  meses: string[]; // "MM-AAAA", em ordem cronológica
   resumo: LinhaResumo[];
   saldos: SaldoContaMes[];
   aplicado: SaldoAplicadoMes[];

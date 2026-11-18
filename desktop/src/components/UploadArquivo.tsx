@@ -20,7 +20,7 @@ export function UploadArquivo({ onArquivo, disabled, maxMB = 10 }: Props) {
   }, []);
 
   function validar(f: File): string {
-    if (!/\.(xlsx|xls)$/i.test(f.name)) return "Envie um arquivo Excel (.xlsx ou .xls).";
+    if (!/\.xlsx$/i.test(f.name)) return "Envie um arquivo Excel .xlsx.";
     if (f.size > maxMB * 1024 * 1024) return `O arquivo passa de ${maxMB} MB.`;
     return "";
   }
@@ -51,7 +51,7 @@ export function UploadArquivo({ onArquivo, disabled, maxMB = 10 }: Props) {
           sobre ? "border-slate-900 bg-slate-100" : "border-slate-300 bg-white"
         } ${disabled ? "opacity-50" : ""}`}
       >
-        <p className="font-medium">Arraste a planilha Excel para cá</p>
+        <p className="font-medium">Arraste a planilha Excel (.xlsx) para cá</p>
         <p className="text-slate-500">ou</p>
         <button type="button" className={btnCls} disabled={disabled} onClick={() => inputRef.current?.click()}>
           Escolher arquivo
@@ -59,14 +59,14 @@ export function UploadArquivo({ onArquivo, disabled, maxMB = 10 }: Props) {
         <input
           ref={inputRef}
           type="file"
-          accept=".xlsx,.xls"
+          accept=".xlsx"
           hidden
           onChange={(e) => {
             receber(e.target.files?.[0]);
             e.target.value = ""; // permite escolher o mesmo arquivo de novo
           }}
         />
-        <p className="text-xs text-slate-400">.xlsx ou .xls, até {maxMB} MB</p>
+        <p className="text-xs text-slate-400">.xlsx, até {maxMB} MB</p>
       </div>
       {erro && <p className="mt-2 text-sm text-red-600">{erro}</p>}
     </div>

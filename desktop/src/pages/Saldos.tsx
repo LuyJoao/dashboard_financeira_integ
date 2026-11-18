@@ -1,200 +1,166 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { mensagemErro } from "../api/client";
-import type { SaldoContaMes } from "../api/dashboard";
-import { AplicadoMes, listarSaldos, salvarAplicado, salvarSaldo, SaldoEdicao } from "../api/saldos";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { listarSaldos } from "../api/saldos";
 import { Cartao } from "../components/Cartao";
-import { BotoesExportacao } from "../components/BotoesExportacao";
 import { Carregando, ErroMsg } from "../components/estados";
 import { BarraFiltros, FiltroSelect } from "../components/Filtros";
-import { btnCls } from "../components/ui";
 import { useFiltros } from "../hooks/useFiltros";
 import { formatBRL } from "../lib/format";
-import { parseSaldoBRL } from "../lib/saldos";
+import { visaoPorMes } from "../lib/saldosVisao";
 
-const textoErro = (e: unknown) => mensagemErro(e, e instanceof Error ? e.message : undefined);
-const paraTexto = (c: number) => (c / 100).toFixed(2).replace(".", ",");
-const campo = "w-32 rounded-md border border-slate-300 px-2 py-1 text-right text-sm tabular-nums outline-none focus:border-slate-900";
-
-function Selo({ status }: { status: string | null }) {
+function Selo({ status }: { status: string }) {
   if (status === "OK") return <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800">OK</span>;
   if (status === "DIVERGÊNCIA") return <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">Divergência</span>;
-  if (status === "NÃO CONFERIDO") return <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-600">Não conferido</span>;
-  return <span>—</span>;
+  return <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-600">Não conferido</span>;
 }
 
-// Uma conta no mês: saldo inicial e saldo do extrato editáveis; o resto é calculado e mostra o resultado ao vivo.
-function LinhaSaldo({ s, enviando, onSalvar }: { s: SaldoContaMes; enviando: boolean; onSalvar: (d: SaldoEdicao) => void }) {
-  const origIni = paraTexto(s.saldo_inicial);
-  const origExt = s.status === "NÃO CONFERIDO" ? "" : paraTexto(s.saldo_informado);
-  const [ini, setIni] = useState(origIni);
-  const [ext, setExt] = useState(origExt);
+const brl = (v: number | null) => (v === null ? "—" : formatBRL(v));
 
-  const iniN = parseSaldoBRL(ini);
-  const extVazio = ext.trim() === "";
-  const extN = extVazio ? null : parseSaldoBRL(ext);
-  const invalido = iniN === null || (!extVazio && extN === null);
-  const alterado = ini !== origIni || ext !== origExt;
-  const calculado = iniN === null ? null : iniN + s.entradas + s.saidas;
-  const dif = calculado === null || extN === null ? null : calculado - extN;
-  const status = invalido ? null : extVazio ? "NÃO CONFERIDO" : dif === 0 ? "OK" : "DIVERGÊNCIA";
-
-  return (
-    <tr className="border-b tabular-nums last:border-0">
-      <td className="p-2">{s.conta}</td>
-      <td className="p-2 text-right">
-        <input className={campo} inputMode="decimal" value={ini} onChange={(e) => setIni(e.target.value)} />
-      </td>
-      <td className="p-2 text-right text-green-700">{formatBRL(s.entradas)}</td>
-      <td className="p-2 text-right text-red-700">{formatBRL(s.saidas)}</td>
-      <td className="p-2 text-right">{calculado === null ? "—" : formatBRL(calculado)}</td>
-      <td className="p-2 text-right">
-        <input className={campo} inputMode="decimal" placeholder="não conferido" value={ext} onChange={(e) => setExt(e.target.value)} />
-      </td>
-      <td className="p-2 text-right">{dif === null ? "—" : formatBRL(dif)}</td>
-      <td className="p-2 text-center">
-        <Selo status={status} />
-      </td>
-      <td className="p-2 text-right">
-        <button
-          className={`${btnCls} px-3 py-1`}
-          disabled={!alterado || invalido || enviando}
-          onClick={() => iniN !== null && onSalvar({ saldo_inicial: iniN, saldo_extrato: extN })}
-        >
-          Salvar
-        </button>
-      </td>
-    </tr>
-  );
-}
-
-function BlocoAplicado({ a, enviando, onSalvar }: { a: AplicadoMes; enviando: boolean; onSalvar: (v: number | null) => void }) {
-  const orig = a.sobrescrito ? paraTexto(a.saldo_final) : "";
-  const [txt, setTxt] = useState(orig);
-  const vazio = txt.trim() === "";
-  const valor = vazio ? null : parseSaldoBRL(txt);
-  const invalido = !vazio && valor === null;
-
-  return (
-    <div className="space-y-3 rounded-xl border bg-white p-4 text-sm">
-      <h2 className="font-medium">Saldo aplicado ({a.mes})</h2>
-      <p className="text-slate-600">
-        No início do mês: <strong>{formatBRL(a.saldo_inicial)}</strong> · Calculado (aplicações menos resgates): <strong>{formatBRL(a.calculado)}</strong> · Em
-        uso: <strong>{formatBRL(a.saldo_final)}</strong> ({a.sobrescrito ? "informado por você" : "calculado"})
-      </p>
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="space-y-1">
-          <span className="block text-xs text-slate-500">Saldo real do investimento (opcional, do extrato da aplicação)</span>
-          <input className={campo} inputMode="decimal" value={txt} onChange={(e) => setTxt(e.target.value)} />
-        </label>
-        <button className={`${btnCls} px-3 py-1`} disabled={vazio || invalido || txt === orig || enviando} onClick={() => onSalvar(valor)}>
-          Salvar saldo real
-        </button>
-        {a.sobrescrito && (
-          <button className="rounded-md border px-3 py-1 hover:bg-slate-50" disabled={enviando} onClick={() => onSalvar(null)}>
-            Voltar ao calculado
-          </button>
-        )}
-      </div>
-      {invalido && <p className="text-red-600">Valor inválido. Use números e vírgula, por exemplo 1234,56.</p>}
-    </div>
-  );
-}
-
+// SOMENTE CONSULTA: os saldos vêm do extrato (importação) ou são calculados dos lançamentos. Não há edição nesta tela.
 export default function Saldos() {
   const f = useFiltros();
-  const qc = useQueryClient();
   const consulta = useQuery({ queryKey: ["saldos"], queryFn: listarSaldos });
   const d = consulta.data;
   const mes = f.get("mes") || (d ? d.meses[d.meses.length - 1] : "");
 
+  const visao = useMemo(() => (d ? visaoPorMes(d) : []), [d]);
   const linhas = useMemo(() => (d ? d.saldos.filter((s) => s.mes === mes).sort((a, b) => a.conta.localeCompare(b.conta)) : []), [d, mes]);
   const aplicado = d?.aplicado.find((a) => a.mes === mes);
-
-  // Depois de salvar, a lista, o dashboard e os meses seguintes se recalculam
-  const atualizar = () => {
-    qc.invalidateQueries({ queryKey: ["saldos"] });
-    qc.invalidateQueries({ queryKey: ["dashboard"] });
-  };
-  const salvarConta = useMutation({
-    mutationFn: ({ conta, dados }: { conta: string; dados: SaldoEdicao }) => salvarSaldo(mes, conta, dados),
-    onSuccess: atualizar,
-  });
-  const salvarApl = useMutation({ mutationFn: (v: number | null) => salvarAplicado(mes, v), onSuccess: atualizar });
 
   if (consulta.isLoading) return <Carregando texto="Carregando os saldos..." />;
   if (consulta.error || !d) return <ErroMsg erro={consulta.error} onRetry={() => consulta.refetch()} />;
 
-  const saldoContas = linhas.reduce((t, s) => t + s.saldo_informado, 0);
-  const divergencias = linhas.filter((s) => s.status === "DIVERGÊNCIA").length;
-  const naoConferidos = linhas.filter((s) => s.status === "NÃO CONFERIDO").length;
+  const doMes = visao.find((v) => v.mes === mes);
 
   return (
-    <div className="max-w-6xl space-y-4">
-      <div className="flex items-center justify-between gap-4">
+    <div className="max-w-6xl space-y-6">
+      <div>
         <h1 className="text-xl font-semibold">Saldos mensais</h1>
-        <BotoesExportacao />
+        <p className="mt-1 text-sm text-slate-500">
+          Tela de consulta. O saldo do extrato vem da importação (lido do próprio extrato) e o saldo calculado vem dos lançamentos. Se os dois não batem, aparece
+          divergência: confira os lançamentos. Saldos não são editados aqui.
+        </p>
       </div>
-      <p className="text-sm text-slate-500">
-        O saldo do extrato é o que o banco mostra no fim do mês. Na importação ele já vem lido do extrato; aqui você confere, corrige ou informa o de um mês
-        lançado à mão. Deixe em branco se ainda não conferiu: o sistema usa o saldo calculado dos lançamentos.
-      </p>
 
       <BarraFiltros mostrarLimpar={f.temFiltro} onLimpar={f.limpar}>
         <FiltroSelect label="Mês" valor={f.get("mes")} onChange={(v) => f.set("mes", v)} opcoes={d.meses} todas="Último mês" />
       </BarraFiltros>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Cartao titulo={`Saldo nas contas (fim de ${mes})`} valor={formatBRL(saldoContas)} />
-        <Cartao titulo="Saldo aplicado" valor={aplicado ? formatBRL(aplicado.saldo_final) : "—"} />
-        <Cartao titulo="Total (contas + aplicado)" valor={aplicado ? formatBRL(saldoContas + aplicado.saldo_final) : "—"} />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <Cartao titulo={`Saldo nas contas (fim de ${mes})`} valor={brl(doMes?.contas ?? null)} />
+        <Cartao titulo="Saldo aplicado" valor={brl(aplicado ? aplicado.saldo_final : null)} />
+        <Cartao titulo="Total (contas + aplicado)" valor={brl(doMes?.total ?? null)} />
+        <Cartao
+          titulo="Variação do total no mês"
+          valor={brl(doMes?.variacao ?? null)}
+          destaque={doMes?.variacao == null ? undefined : doMes.variacao >= 0 ? "ok" : "erro"}
+        />
       </div>
 
-      {divergencias > 0 && (
+      {doMes && doMes.divergencias > 0 && (
         <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-900">
-          {divergencias} conta(s) com divergência: o saldo calculado dos lançamentos é diferente do saldo do extrato. Confira se falta algum lançamento ou se há algum valor
-          errado.
+          {doMes.divergencias} conta(s) com divergência: o saldo calculado dos lançamentos é diferente do saldo do extrato. Confira se falta algum lançamento ou se há
+          algum valor errado.
         </p>
       )}
-      {naoConferidos > 0 && (
+      {doMes && doMes.naoConferidos > 0 && (
         <p className="rounded-md bg-slate-100 p-3 text-sm text-slate-600">
-          {naoConferidos} conta(s) sem saldo do extrato neste mês (saldo calculado a partir dos lançamentos).
+          {doMes.naoConferidos} conta(s) sem saldo do extrato neste mês (saldo calculado a partir dos lançamentos).
         </p>
       )}
 
-      <div className="overflow-x-auto rounded-xl border bg-white">
-        <table className="w-full text-sm">
-          <thead className="border-b bg-slate-50 text-slate-600">
-            <tr>
-              <th className="p-2 text-left font-medium">Conta</th>
-              <th className="p-2 text-right font-medium">Saldo inicial</th>
-              <th className="p-2 text-right font-medium">Entradas</th>
-              <th className="p-2 text-right font-medium">Saídas</th>
-              <th className="p-2 text-right font-medium">Saldo calculado</th>
-              <th className="p-2 text-right font-medium">Saldo do extrato</th>
-              <th className="p-2 text-right font-medium">Diferença</th>
-              <th className="p-2 text-center font-medium">Conciliação</th>
-              <th className="p-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {linhas.map((s) => (
-              <LinhaSaldo
-                key={`${s.mes}|${s.conta}|${s.saldo_inicial}|${s.saldo_informado}|${s.status}`}
-                s={s}
-                enviando={salvarConta.isPending}
-                onSalvar={(dados) => salvarConta.mutate({ conta: s.conta, dados })}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {salvarConta.isError && <p className="text-sm text-red-600">{textoErro(salvarConta.error)}</p>}
+      <section className="space-y-2">
+        <h2 className="text-sm font-medium">Contas em {mes}</h2>
+        <div className="overflow-x-auto rounded-xl border bg-white">
+          <table className="w-full text-sm">
+            <thead className="border-b bg-slate-50 text-slate-600">
+              <tr>
+                <th className="p-2 text-left font-medium">Conta</th>
+                <th className="p-2 text-right font-medium">Saldo inicial</th>
+                <th className="p-2 text-right font-medium">Entradas</th>
+                <th className="p-2 text-right font-medium">Saídas</th>
+                <th className="p-2 text-right font-medium">Saldo calculado</th>
+                <th className="p-2 text-right font-medium">Saldo do extrato</th>
+                <th className="p-2 text-right font-medium">Diferença</th>
+                <th className="p-2 text-center font-medium">Conciliação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {linhas.map((s) => (
+                <tr key={s.conta} className="border-b tabular-nums last:border-0">
+                  <td className="p-2">{s.conta}</td>
+                  <td className="p-2 text-right">{formatBRL(s.saldo_inicial)}</td>
+                  <td className="p-2 text-right text-green-700">{formatBRL(s.entradas)}</td>
+                  <td className="p-2 text-right text-red-700">{formatBRL(s.saidas)}</td>
+                  <td className="p-2 text-right">{formatBRL(s.saldo_final)}</td>
+                  <td className="p-2 text-right">{s.status === "NÃO CONFERIDO" ? "—" : formatBRL(s.saldo_informado)}</td>
+                  <td className="p-2 text-right">{s.status === "NÃO CONFERIDO" ? "—" : formatBRL(s.diferenca)}</td>
+                  <td className="p-2 text-center">
+                    <Selo status={s.status} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       {aplicado && (
-        <BlocoAplicado key={`${aplicado.mes}|${aplicado.saldo_final}|${aplicado.sobrescrito}`} a={aplicado} enviando={salvarApl.isPending} onSalvar={(v) => salvarApl.mutate(v)} />
+        <section className="space-y-1 rounded-xl border bg-white p-4 text-sm">
+          <h2 className="font-medium">Saldo aplicado ({aplicado.mes})</h2>
+          <p className="text-slate-600">
+            No início do mês: <strong>{formatBRL(aplicado.saldo_inicial)}</strong> · Calculado (aplicações menos resgates): <strong>{formatBRL(aplicado.calculado)}</strong>{" "}
+            · Em uso: <strong>{formatBRL(aplicado.saldo_final)}</strong>
+          </p>
+          <p className="text-xs text-slate-500">O extrato das contas só mostra a saída ao aplicar e a entrada ao resgatar; por isso o saldo aplicado é calculado.</p>
+        </section>
       )}
-      {salvarApl.isError && <p className="text-sm text-red-600">{textoErro(salvarApl.error)}</p>}
+
+      <section className="space-y-2">
+        <h2 className="text-sm font-medium">Evolução mês a mês</h2>
+        <div className="overflow-x-auto rounded-xl border bg-white">
+          <table className="w-full text-sm">
+            <thead className="border-b bg-slate-50 text-slate-600">
+              <tr>
+                <th className="p-2 text-left font-medium">Mês</th>
+                <th className="p-2 text-right font-medium">Saldo nas contas</th>
+                <th className="p-2 text-right font-medium">Saldo aplicado</th>
+                <th className="p-2 text-right font-medium">Total</th>
+                <th className="p-2 text-right font-medium">Variação no mês</th>
+                <th className="p-2 text-center font-medium">Conciliação</th>
+                <th className="p-2" />
+              </tr>
+            </thead>
+            <tbody>
+              {visao.map((v) => (
+                <tr key={v.mes} className={`border-b tabular-nums last:border-0 ${v.mes === mes ? "bg-slate-50 font-medium" : ""}`}>
+                  <td className="p-2">{v.mes}</td>
+                  <td className="p-2 text-right">{formatBRL(v.contas)}</td>
+                  <td className="p-2 text-right">{brl(v.aplicado)}</td>
+                  <td className="p-2 text-right">{brl(v.total)}</td>
+                  <td className={`p-2 text-right ${v.variacao === null ? "" : v.variacao >= 0 ? "text-green-700" : "text-red-700"}`}>{brl(v.variacao)}</td>
+                  <td className="p-2 text-center">
+                    {v.divergencias > 0 ? (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">{v.divergencias} divergência(s)</span>
+                    ) : v.naoConferidos > 0 ? (
+                      <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-600">{v.naoConferidos} não conferido(s)</span>
+                    ) : (
+                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800">OK</span>
+                    )}
+                  </td>
+                  <td className="p-2 text-right">
+                    {v.mes !== mes && (
+                      <button className="text-sm text-slate-600 hover:text-slate-900" onClick={() => f.set("mes", v.mes)}>
+                        Ver
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

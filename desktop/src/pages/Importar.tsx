@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   confirmarImportacao,
   enviarPrevia,
@@ -18,14 +18,12 @@ import { BotoesExportacao } from "../components/BotoesExportacao";
 import { DataTable } from "../components/DataTable";
 import { Carregando, ErroMsg } from "../components/estados";
 import { FormLancamento } from "../components/FormLancamento";
-import { FormSaldos } from "../components/importar/FormSaldos";
 import { TabelaErros } from "../components/importar/TabelaErros";
 import { Modal } from "../components/Modal";
 import { UploadArquivo } from "../components/UploadArquivo";
 import { btnCls } from "../components/ui";
 import { formatBRL, formatData, formatDataHora } from "../lib/format";
 import { CONTAS_FIXAS } from "../lib/lancamentos";
-import { ajustesDasCorrecoes, chave, conciliar, EstadoSaldos, iniciarSaldos, montarSaldos } from "../lib/saldos";
 
 // Se sobrarem linhas com erro: true = importa as demais e ignora as com erro; false = só importa sem nenhum erro.
 const PERMITE_IMPORTAR_COM_ERROS = true;
@@ -34,16 +32,26 @@ const PERMITE_IMPORTAR_COM_ERROS = true;
 // Por isso o tipo sugerido vem do sinal.
 function brutoParaEdicao(e: ErroLinha): LancamentoEdicao {
   const b = e.bruto;
-  const tipo: Tipo = b.valor > 0 ? "Receita" : b.tipo === "Investimento" ? "Investimento" : "Despesa";
+  const valor = valorBrutoEmCentavos(b.valor);
+  const tipo: Tipo = valor > 0 ? "Receita" : b.tipo === "Investimento" ? "Investimento" : "Despesa";
   return {
-    data: /^\d{4}-\d{2}-\d{2}$/.test(b.data) ? b.data : "",
-    banco: CONTAS_FIXAS.includes(b.banco) ? b.banco : CONTAS_FIXAS[0],
-    categoria: b.categoria,
+    data: typeof b.data === "string" && /^\d{4}-\d{2}-\d{2}$/.test(b.data) ? b.data : "",
+    banco: CONTAS_FIXAS.includes(String(b.banco)) ? String(b.banco) : CONTAS_FIXAS[0],
+    categoria: String(b.categoria),
     tipo,
-    descricao: b.descricao,
-    observacao: b.observacao,
-    valor: b.valor,
+    descricao: String(b.descricao),
+    observacao: String(b.observacao ?? ""),
+    valor,
   };
+}
+
+function valorBrutoEmCentavos(valor: number | string | null): number {
+  if (typeof valor === "number") return Number.isFinite(valor) ? Math.round(valor * 100) : 0;
+  if (typeof valor !== "string") return 0;
+  const texto = valor.trim().replace(/R\$\s?/i, "").replace(/\s/g, "");
+  const normalizado = texto.includes(",") ? texto.replace(/\./g, "").replace(",", ".") : texto;
+  const numero = Number(normalizado);
+  return Number.isFinite(numero) ? Math.round(numero * 100) : 0;
 }
 
 const emblema = (cor: string, texto: string) => <span className={`rounded-full px-2 py-0.5 text-xs ${cor}`}>{texto}</span>;
@@ -109,13 +117,11 @@ export default function Importar() {
   const [concluida, setConcluida] = useState<Importacao | null>(null);
   const [correcoes, setCorrecoes] = useState<Record<number, LancamentoEdicao>>({});
   const [corrigindo, setCorrigindo] = useState<ErroLinha | null>(null);
-  const [saldos, setSaldos] = useState<EstadoSaldos | null>(null);
 
   const gerarPrevia = useMutation({
     mutationFn: enviarPrevia,
     onSuccess: (p) => {
       setPrevia(p);
-      setSaldos(iniciarSaldos(p));
       setCorrecoes({});
     },
   });
@@ -137,18 +143,7 @@ export default function Importar() {
   const corrigidas = Object.keys(correcoes).length;
   const errosRestantes = previa ? previa.linhas_erro - corrigidas : 0;
   const aImportar = previa ? previa.novas + previa.atualizadas + corrigidas : 0;
-  const dadosSaldos = useMemo(() => (previa && saldos ? montarSaldos(previa, saldos) : null), [previa, saldos]);
-  const divergencias = useMemo(() => {
-    if (!previa || !saldos) return 0;
-    const ajustes = ajustesDasCorrecoes(correcoes);
-    return previa.saldos.filter((s) => {
-      const k = chave(s.mes, s.conta);
-      const campo = saldos.contas[k];
-      return campo ? conciliar(s, campo, ajustes[k]).status === "DIVERGÊNCIA" : false;
-    }).length;
-  }, [previa, saldos, correcoes]);
-
-  const bloqueado = confirmar.isPending || !dadosSaldos || (errosRestantes > 0 && !PERMITE_IMPORTAR_COM_ERROS);
+  const bloqueado = confirmar.isPending || (errosRestantes > 0 && !PERMITE_IMPORTAR_COM_ERROS);
 
   function escolher(f: File) {
     setArquivo(f);
@@ -161,18 +156,15 @@ export default function Importar() {
     setPrevia(null);
     setConcluida(null);
     setCorrecoes({});
-    setSaldos(null);
     gerarPrevia.reset();
     confirmar.reset();
   }
 
   function aoConfirmar() {
-    if (!previa || !dadosSaldos) return;
+    if (!previa) return;
     confirmar.mutate({
       token: previa.token,
       correcoes: Object.entries(correcoes).map(([linha, dados]) => ({ linha: Number(linha), dados })),
-      saldos: dadosSaldos.saldos,
-      aplicado: dadosSaldos.aplicado,
     });
   }
 
@@ -207,8 +199,8 @@ export default function Importar() {
           </>
         )}
 
-        {/* Etapa 2: prévia, correções e saldos */}
-        {!concluida && previa && saldos && (
+        {/* Etapa 2: prévia e correções */}
+        {!concluida && previa && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <p className="text-sm text-slate-600">
@@ -258,17 +250,43 @@ export default function Importar() {
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-sm font-medium">Saldos das contas e do investimento</h2>
-              <FormSaldos previa={previa} estado={saldos} correcoes={correcoes} onChange={setSaldos} />
-              {divergencias > 0 && (
-                <p className="text-sm text-amber-800">
-                  {divergencias} conta(s) com divergência entre o saldo calculado e o informado. Você pode confirmar mesmo assim, mas vale conferir o extrato.
+              <h2 className="text-sm font-medium">Saldos lidos do extrato</h2>
+              <div className="overflow-x-auto rounded-xl border bg-white">
+                <table className="w-full text-sm">
+                  <thead className="border-b bg-slate-50 text-slate-600">
+                    <tr>
+                      <th className="p-2 text-left font-medium">Mês</th>
+                      <th className="p-2 text-left font-medium">Conta</th>
+                      <th className="p-2 text-right font-medium">Entradas</th>
+                      <th className="p-2 text-right font-medium">Saídas</th>
+                      <th className="p-2 text-right font-medium">Saldo inicial</th>
+                      <th className="p-2 text-right font-medium">Saldo final do extrato</th>
+                      <th className="p-2 text-center font-medium">Leitura</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previa.saldos.map((s) => (
+                      <tr key={`${s.mes}-${s.conta}`} className="border-b tabular-nums last:border-0">
+                        <td className="p-2">{s.mes}</td>
+                        <td className="p-2">{s.conta}</td>
+                        <td className="p-2 text-right">{formatBRL(s.entradas)}</td>
+                        <td className="p-2 text-right">{formatBRL(s.saidas)}</td>
+                        <td className="p-2 text-right">{formatBRL(s.saldo_inicial)}</td>
+                        <td className="p-2 text-right">{formatBRL(s.saldo_final_informado)}</td>
+                        <td className="p-2 text-center">{s.lido_do_extrato ? "Lido" : "Não conferido"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {previa.aplicado.length > 0 && (
+                <p className="text-xs text-slate-500">
+                  Saldo aplicado calculado: {previa.aplicado.map((a) => `${a.mes}: ${formatBRL(a.saldo_final)}`).join(" · ")}
                 </p>
               )}
             </div>
 
             {confirmar.isError && <p className="text-sm text-red-600">{mensagemErro(confirmar.error)}</p>}
-            {!dadosSaldos && <p className="text-sm text-slate-500">Preencha todos os saldos para poder confirmar.</p>}
 
             <div className="flex gap-3">
               <button className={btnCls} disabled={bloqueado} onClick={aoConfirmar}>

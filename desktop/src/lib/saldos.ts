@@ -1,12 +1,10 @@
 import type { AplicadoInformado, Previa, SaldoInformado, SaldoSugerido } from "../api/importacoes";
 import type { LancamentoEdicao } from "../api/lancamentos";
 
-const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-
-// "2026-05-14" -> "Mai/26"
+// "2026-05-14" -> "05-2026"
 export function rotuloMes(dataISO: string): string {
   const [ano, mes] = dataISO.split("-");
-  return `${MESES[Number(mes) - 1]}/${ano.slice(2)}`;
+  return `${mes}-${ano}`;
 }
 
 // Aceita zero e negativo (o saldo de uma conta pode ficar negativo): "1.234,56" ou "-1234,56".

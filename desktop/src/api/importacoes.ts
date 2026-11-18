@@ -16,13 +16,13 @@ import { confirmarMock, listarMock, previaMock } from "./importacoesMock";
 
 // A linha como veio da planilha, para o usuário poder corrigi-la na tela.
 export type LinhaBruta = {
-  data: string; // pode ser inválida, ex.: "14//05/26"
-  banco: string;
-  categoria: string;
-  tipo: string;
-  descricao: string;
-  observacao: string;
-  valor: number; // centavos, com sinal
+  data: string | number | null; // pode ser inválida, ex.: "14//05/26"
+  banco: string | number;
+  categoria: string | number;
+  tipo: string | number;
+  descricao: string | number;
+  observacao: string | number | null;
+  valor: number | string | null; // valor bruto da célula
 };
 
 export type ErroLinha = { linha: number; coluna: string; mensagem: string; bruto: LinhaBruta };
@@ -42,7 +42,7 @@ export type LinhaAtualizada = { linha: number; descricao: string; mudancas: stri
 
 // Soma de entradas e saídas do mês na conta (sem as linhas com erro) e os saldos que o back-end conseguiu obter.
 // Regra de leitura (docs/regra-saldos.md): saldo final = "Saldo Após Lançamento" da última linha do mês na conta;
-// saldo inicial = "Saldo Após Lançamento" da primeira linha menos o valor dela. Se não der para ler, vem null e o usuário digita.
+// saldo inicial = "Saldo Após Lançamento" da primeira linha menos o valor dela.
 export type SaldoSugerido = {
   mes: string;
   conta: string;
@@ -52,7 +52,7 @@ export type SaldoSugerido = {
   saldo_final_informado: number | null;
   lido_do_extrato: boolean; // true = os dois saldos foram lidos do extrato (o usuário só confere)
 };
-// Saldo aplicado CALCULADO (aplicações menos resgates, acumulado). O usuário pode sobrescrever com o saldo real do investimento.
+// Saldo aplicado calculado (aplicações menos resgates, acumulado).
 export type AplicadoSugerido = { mes: string; saldo_inicial: number | null; saldo_final: number | null; calculado: boolean };
 
 export type Previa = {
@@ -63,7 +63,7 @@ export type Previa = {
   atualizadas: number;
   iguais: number;
   linhas_erro: number;
-  periodos: string[]; // meses encontrados
+  periodos: string[]; // meses encontrados, MM-AAAA
   categorias: string[]; // categorias que existem no sistema (para a correção)
   amostra: LinhaPrevia[]; // só algumas linhas novas e atualizadas
   atualizadas_detalhe: LinhaAtualizada[];
@@ -75,12 +75,9 @@ export type Previa = {
 export type Correcao = { linha: number; dados: LancamentoEdicao };
 export type SaldoInformado = { mes: string; conta: string; saldo_inicial: number; saldo_final_informado: number };
 export type AplicadoInformado = { mes: string; saldo_inicial: number; saldo_final: number };
-
 export type ConfirmacaoImportacao = {
   token: string;
   correcoes: Correcao[]; // linhas com erro que o usuário corrigiu na tela
-  saldos: SaldoInformado[];
-  aplicado: AplicadoInformado[];
 };
 
 export type Importacao = {
@@ -91,6 +88,7 @@ export type Importacao = {
   linhas_total: number;
   linhas_novas: number;
   linhas_atualizadas: number;
+  linhas_iguais: number;
   linhas_erro: number;
   status: "concluida" | "concluida_com_erros";
 };

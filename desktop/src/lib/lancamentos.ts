@@ -14,6 +14,7 @@ function dataValida(s: string): boolean {
 export function validar(l: LancamentoEdicao): string[] {
   const erros: string[] = [];
   if (!dataValida(l.data)) erros.push("Data inválida.");
+  else if (l.data < "2026-01-01") erros.push("A data deve ser a partir de 01/01/2026.");
   if (!l.banco) erros.push("Escolha a conta.");
   if (!l.categoria) erros.push("Escolha a categoria.");
   if (l.valor === 0) erros.push("O valor não pode ser zero.");
