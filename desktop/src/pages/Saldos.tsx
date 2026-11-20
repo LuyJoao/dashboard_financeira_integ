@@ -4,6 +4,7 @@ import { listarSaldos } from "../api/saldos";
 import { Cartao } from "../components/Cartao";
 import { Carregando, ErroMsg } from "../components/estados";
 import { BarraFiltros, FiltroSelect } from "../components/Filtros";
+import { BotoesExportacao } from "../components/BotoesExportacao";
 import { useFiltros } from "../hooks/useFiltros";
 import { formatBRL } from "../lib/format";
 import { visaoPorMes } from "../lib/saldosVisao";
@@ -41,11 +42,19 @@ export default function Saldos() {
           divergência: confira os lançamentos.
         </p>
       </div>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <BarraFiltros mostrarLimpar={f.temFiltro} onLimpar={f.limpar}>
+          <FiltroSelect
+            label="Mês"
+            valor={f.get("mes")}
+            onChange={(v) => f.set("mes", v)}
+            opcoes={d.meses}
+            todas="Último mês"
+          />
+        </BarraFiltros>
 
-      <BarraFiltros mostrarLimpar={f.temFiltro} onLimpar={f.limpar}>
-        <FiltroSelect label="Mês" valor={f.get("mes")} onChange={(v) => f.set("mes", v)} opcoes={d.meses} todas="Último mês" />
-      </BarraFiltros>
-
+        <BotoesExportacao />
+      </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Cartao titulo={`Saldo nas contas (fim de ${mes})`} valor={brl(doMes?.contas ?? null)} />
         <Cartao titulo="Saldo aplicado" valor={brl(aplicado ? aplicado.saldo_final : null)} />
