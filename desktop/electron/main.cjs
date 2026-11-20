@@ -25,7 +25,8 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
-    ...(fs.existsSync(icone) ? { icon: icone } : {}), // no instalado, o ícone vem do .exe
+    autoHideMenuBar: true,
+    ...(fs.existsSync(icone) ? { icon: icone } : {}),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -34,7 +35,9 @@ function createWindow() {
       preload: path.join(__dirname, "preload.cjs"),
     },
   });
-
+  
+  win.maximize();
+  
   // O aplicativo não navega para fora: links externos abrem no navegador do sistema.
   win.webContents.setWindowOpenHandler(({ url }) => {
     let protocolo;

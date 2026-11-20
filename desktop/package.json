@@ -3,7 +3,7 @@
   "description": "Sistema financeiro: lançamentos, contas a pagar e a receber e conciliação bancária",
   "author": "Equipe do projeto",
   "private": true,
-  "version": "0.2.3",
+  "version": "0.2.6",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
@@ -39,14 +39,14 @@
   },
   "build": {
     "appId": "com.empresa.pagamentos",
-    "productName": "Pagamentos",
+    "productName": "Dashboard Financeira",
     "files": [
       "dist/**",
       "electron/**",
       "build/icon.png"
     ],
     "directories": {
-      "output": "release"
+      "output": "C:\\Users\\DELL\\Documents\\GitHub\\dashboard_financeira_integ\\backend\\atualizacoes"
     },
     "win": {
       "target": "nsis",

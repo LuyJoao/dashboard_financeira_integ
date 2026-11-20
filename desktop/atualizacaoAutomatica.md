@@ -10,7 +10,7 @@ servidor da empresa. Se houver, baixam em segundo plano e perguntam se querem re
    acontece para uma versão **maior**. Nunca reutilize um número já publicado.
 2. Confira `desktop/.env`: `VITE_API_URL` deve apontar para a API do servidor (o endereço fica gravado no instalador).
 3. Gere o instalador: `npm run electron:build`.
-4. Em `desktop/release/`, copie **os três arquivos** abaixo para a pasta `backend/atualizacoes/` do servidor:
+4. **os três arquivos** abaixo vao para a pasta `backend/atualizacoes/` do servidor:
    - `Pagamentos Setup X.Y.Z.exe`
    - `Pagamentos Setup X.Y.Z.exe.blockmap`
    - `latest.yml`  (é ele que diz qual é a versão mais nova)

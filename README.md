@@ -64,7 +64,7 @@ npm install
 copy .env.example .env
 npm run electron:dev      # abre o app Electron
 npm run dev               # ou só no navegador: http://localhost:5173
-npm run electron:build    # gera o instalador em desktop/release
+npm run electron:build    # gera o instalador em backend/atualizacoes
 ```
 
 Em produção, aponte `VITE_API_URL` (em `desktop/.env`) para a URL HTTPS da API antes do build.
