@@ -3,7 +3,7 @@
   "description": "Sistema financeiro: lançamentos, contas a pagar e a receber e conciliação bancária",
   "author": "Equipe do projeto",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.2.3",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",

@@ -38,7 +38,7 @@ export default function Saldos() {
         <h1 className="text-xl font-semibold">Saldos mensais</h1>
         <p className="mt-1 text-sm text-slate-500">
           Tela de consulta. O saldo do extrato vem da importação (lido do próprio extrato) e o saldo calculado vem dos lançamentos. Se os dois não batem, aparece
-          divergência: confira os lançamentos. Saldos não são editados aqui.
+          divergência: confira os lançamentos.
         </p>
       </div>
 
